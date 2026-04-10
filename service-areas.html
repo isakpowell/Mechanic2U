@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Service Areas — Mechanic2U</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Rethink+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#EE3D11",
+          "on-surface": "#1c1b1b",
+          "surface": "#fcf9f8",
+          "background": "#fcf9f8",
+          "outline-variant": "#e4beb4",
+          "surface-tint": "#EE3D11",
+          "primary-fixed": "#ffdbd1",
+          "on-primary-fixed": "#3b0900",
+        },
+        fontFamily: {
+          "headline": ["Rethink Sans"],
+          "body": ["Inter"],
+          "label": ["Inter"]
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9990;
+    pointer-events: none;
+    opacity: 0.022;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 160px 160px;
+  }
+
+  .signature-gradient { background: #EE3D11; }
+
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
+  .load-reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: loadUp 0.75s cubic-bezier(0.16,1,0.3,1) forwards;
+  }
+  @keyframes loadUp { to { opacity: 1; transform: translateY(0); } }
+
+  .nav-link { position: relative; }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -3px; left: 0;
+    width: 0; height: 1.5px;
+    background: #EE3D11;
+    transition: width 0.28s ease;
+  }
+  .nav-link:hover::after { width: 100%; }
+
+  .area-card {
+    border: 1px solid #e7e5e4;
+    border-radius: 16px;
+    padding: 28px;
+    background: #fff;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .area-card:hover {
+    border-color: rgba(238,61,17,0.25);
+    box-shadow: 0 8px 32px rgba(238,61,17,0.08);
+  }
+
+  .suburb-tag {
+    display: inline-block;
+    font-family: 'Rethink Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: #57534e;
+    background: #f5f5f4;
+    border-radius: 6px;
+    padding: 3px 9px;
+    margin: 2px;
+  }
+
+  .ping { animation: ping 1.6s cubic-bezier(0,0,0.2,1) infinite; }
+  @keyframes ping { 75%, 100% { transform: scale(2.2); opacity: 0; } }
+
+  .text-balance { text-wrap: balance; }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary/10 selection:text-primary overflow-x-hidden">
+
+<!-- ── Top App Bar ── -->
+<header class="bg-white/80 backdrop-blur-xl fixed top-0 w-full z-50 border-b border-stone-100">
+  <nav class="flex justify-between items-center px-6 md:px-12 py-2 max-w-screen-2xl mx-auto">
+    <div class="load-reveal" style="animation-delay:0s">
+      <a href="index.html">
+        <img alt="Mechanic2U" class="h-20 w-auto" src="mechaniclogo.png"/>
+      </a>
+    </div>
+    <div class="hidden md:flex items-center gap-10 load-reveal" style="animation-delay:0.06s">
+      <a class="nav-link text-stone-400 font-headline text-sm tracking-tight hover:text-on-surface transition-colors" href="index.html">Service</a>
+      <a class="nav-link text-stone-400 font-headline text-sm tracking-tight hover:text-on-surface transition-colors" href="diagnostics.html">Diagnostics</a>
+      <a class="nav-link text-primary font-bold font-headline text-sm tracking-tight" href="service-areas.html">Service Areas</a>
+    </div>
+    <div class="load-reveal" style="animation-delay:0.12s">
+      <a href="booking.html" class="signature-gradient text-white px-6 py-2.5 rounded-md font-headline font-bold text-sm tracking-tight hover:opacity-90 active:scale-95 transition-opacity shadow-lg inline-block" style="box-shadow:0 4px 12px rgba(238,61,17,0.25);">
+        Book Now
+      </a>
+    </div>
+  </nav>
+</header>
+
+<main class="pt-20">
+
+  <!-- ── Page Header ── -->
+  <div class="relative overflow-hidden border-b border-outline-variant/20" style="background:#EE3D11;">
+    <div class="max-w-screen-xl mx-auto px-6 md:px-16 py-12 md:py-16">
+      <div class="load-reveal" style="animation-delay:0.1s">
+        <h1 class="font-headline font-black leading-[0.9] text-4xl md:text-6xl tracking-normal mb-3 text-white" style="letter-spacing:0.02em;">
+          Where We Work
+        </h1>
+        <p class="text-white/70 text-sm font-light leading-relaxed max-w-md">Mobile mechanic service across Greater Sydney. We come to your home, office, or wherever your car is parked.</p>
+        <div class="mt-5 inline-flex items-center gap-3 bg-white/15 border border-white/20 px-4 py-2.5 rounded-full backdrop-blur-sm">
+          <div class="relative flex h-2.5 w-2.5">
+            <span class="ping absolute inline-flex h-full w-full rounded-full bg-white opacity-70"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
+          </div>
+          <span class="text-[11px] font-headline font-bold tracking-[0.18em] uppercase text-white/90">Mechanics active in Sydney now</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Coverage note ── -->
+  <div class="bg-stone-50 border-b border-stone-100 px-6 md:px-16 py-4">
+    <div class="max-w-screen-xl mx-auto flex items-center gap-3">
+      <span class="material-symbols-outlined text-primary text-[18px]">info</span>
+      <p class="font-headline text-sm text-stone-600">
+        Coverage is available <span class="font-bold text-stone-800">within approximately 30km of the Sydney CBD.</span> Can't find your suburb? <a href="booking.html" class="text-primary font-bold hover:underline">Get in touch</a> — we may still be able to help.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Area Grid ── -->
+  <section class="py-14 md:py-20 px-6 md:px-16 bg-white">
+    <div class="max-w-screen-xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+
+        <!-- Inner West -->
+        <div class="area-card">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h2 class="font-headline font-black text-xl text-stone-950 tracking-normal">Inner West</h2>
+              <p class="font-headline text-sm text-stone-400 mt-0.5">2km – 8km from CBD</p>
+            </div>
+            <span class="text-[10px] font-headline font-bold uppercase tracking-[0.18em] text-primary bg-primary/8 px-2.5 py-1 rounded-full" style="background:rgba(238,61,17,0.08);">Active</span>
+          </div>
+          <div class="flex flex-wrap gap-y-1 mb-5">
+            <span class="suburb-tag">Balmain</span>
+            <span class="suburb-tag">Rozelle</span>
+            <span class="suburb-tag">Leichhardt</span>
+            <span class="suburb-tag">Newtown</span>
+            <span class="suburb-tag">Glebe</span>
+            <span class="suburb-tag">Annandale</span>
+            <span class="suburb-tag">Petersham</span>
+            <span class="suburb-tag">Stanmore</span>
+            <span class="suburb-tag">Marrickville</span>
+            <span class="suburb-tag">Dulwich Hill</span>
+            <span class="suburb-tag">Enmore</span>
+            <span class="suburb-tag">Erskineville</span>
+          </div>
+          <a href="booking.html" class="font-headline font-bold text-sm text-primary flex items-center gap-1.5 hover:gap-2.5 transition-all">
+            Book in this area
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </a>
+        </div>
+
+        <!-- Eastern Suburbs -->
+        <div class="area-card">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h2 class="font-headline font-black text-xl text-stone-950 tracking-normal">Eastern Suburbs</h2>
+              <p class="font-headline text-sm text-stone-400 mt-0.5">3km – 12km from CBD</p>
+            </div>
+            <span class="text-[10px] font-headline font-bold uppercase tracking-[0.18em] text-primary px-2.5 py-1 rounded-full" style="background:rgba(238,61,17,0.08);">Active</span>
+          </div>
+          <div class="flex flex-wrap gap-y-1 mb-5">
+            <span class="suburb-tag">Bondi</span>
+            <span class="suburb-tag">Bondi Junction</span>
+            <span class="suburb-tag">Double Bay</span>
+            <span class="suburb-tag">Woollahra</span>
+            <span class="suburb-tag">Paddington</span>
+            <span class="suburb-tag">Surry Hills</span>
+            <span class="suburb-tag">Randwick</span>
+            <span class="suburb-tag">Coogee</span>
+            <span class="suburb-tag">Bronte</span>
+            <span class="suburb-tag">Vaucluse</span>
+            <span class="suburb-tag">Rose Bay</span>
+            <span class="suburb-tag">Maroubra</span>
+          </div>
+          <a href="booking.html" class="font-headline font-bold text-sm text-primary flex items-center gap-1.5 hover:gap-2.5 transition-all">
+            Book in this area
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </a>
+        </div>
+
+        <!-- Lower North Shore -->
+        <div class="area-card">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h2 class="font-headline font-black text-xl text-stone-950 tracking-normal">Lower North Shore</h2>
+              <p class="font-headline text-sm text-stone-400 mt-0.5">4km – 10km from CBD</p>
+            </div>
+            <span class="text-[10px] font-headline font-bold uppercase tracking-[0.18em] text-stone-400 px-2.5 py-1 rounded-full bg-stone-100">Limited</span>
+          </div>
+          <div class="flex flex-wrap gap-y-1 mb-5">
+            <span class="suburb-tag">Mosman</span>
+            <span class="suburb-tag">Neutral Bay</span>
+            <span class="suburb-tag">Cremorne</span>
+            <span class="suburb-tag">Kirribilli</span>
+            <span class="suburb-tag">Milsons Point</span>
+            <span class="suburb-tag">Crows Nest</span>
+            <span class="suburb-tag">St Leonards</span>
+            <span class="suburb-tag">Waverton</span>
+            <span class="suburb-tag">McMahons Point</span>
+            <span class="suburb-tag">North Sydney</span>
+          </div>
+          <a href="booking.html" class="font-headline font-bold text-sm text-primary flex items-center gap-1.5 hover:gap-2.5 transition-all">
+            Book in this area
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </a>
+        </div>
+
+        <!-- Upper North Shore -->
+        <div class="area-card">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h2 class="font-headline font-black text-xl text-stone-950 tracking-normal">Upper North Shore</h2>
+              <p class="font-headline text-sm text-stone-400 mt-0.5">10km – 20km from CBD</p>
+            </div>
+            <span class="text-[10px] font-headline font-bold uppercase tracking-[0.18em] text-stone-400 px-2.5 py-1 rounded-full bg-stone-100">Limited</span>
+          </div>
+          <div class="flex flex-wrap gap-y-1 mb-5">
+            <span class="suburb-tag">Chatswood</span>
+            <span class="suburb-tag">Willoughby</span>
+            <span class="suburb-tag">Lane Cove</span>
+            <span class="suburb-tag">Lindfield</span>
+            <span class="suburb-tag">Killara</span>
+            <span class="suburb-tag">Gordon</span>
+            <span class="suburb-tag">Turramurra</span>
+            <span class="suburb-tag">Pymble</span>
+            <span class="suburb-tag">St Ives</span>
+            <span class="suburb-tag">Hornsby</span>
+          </div>
+          <a href="booking.html" class="font-headline font-bold text-sm text-primary flex items-center gap-1.5 hover:gap-2.5 transition-all">
+            Book in this area
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </a>
+        </div>
+
+        <!-- City & Surrounds -->
+        <div class="area-card">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h2 class="font-headline font-black text-xl text-stone-950 tracking-normal">City & Surrounds</h2>
+              <p class="font-headline text-sm text-stone-400 mt-0.5">0km – 5km from CBD</p>
+            </div>
+            <span class="text-[10px] font-headline font-bold uppercase tracking-[0.18em] text-primary px-2.5 py-1 rounded-full" style="background:rgba(238,61,17,0.08);">Active</span>
+          </div>
+          <div class="flex flex-wrap gap-y-1 mb-5">
+            <span class="suburb-tag">Sydney CBD</span>
+            <span class="suburb-tag">Pyrmont</span>
+            <span class="suburb-tag">Ultimo</span>
+            <span class="suburb-tag">Chippendale</span>
+            <span class="suburb-tag">Waterloo</span>
+            <span class="suburb-tag">Alexandria</span>
+            <span class="suburb-tag">Redfern</span>
+            <span class="suburb-tag">Zetland</span>
+            <span class="suburb-tag">Beaconsfield</span>
+            <span class="suburb-tag">Darlinghurst</span>
+          </div>
+          <a href="booking.html" class="font-headline font-bold text-sm text-primary flex items-center gap-1.5 hover:gap-2.5 transition-all">
+            Book in this area
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </a>
+        </div>
+
+        <!-- Inner South West -->
+        <div class="area-card">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h2 class="font-headline font-black text-xl text-stone-950 tracking-normal">Inner South West</h2>
+              <p class="font-headline text-sm text-stone-400 mt-0.5">8km – 18km from CBD</p>
+            </div>
+            <span class="text-[10px] font-headline font-bold uppercase tracking-[0.18em] text-primary px-2.5 py-1 rounded-full" style="background:rgba(238,61,17,0.08);">Active</span>
+          </div>
+          <div class="flex flex-wrap gap-y-1 mb-5">
+            <span class="suburb-tag">Strathfield</span>
+            <span class="suburb-tag">Burwood</span>
+            <span class="suburb-tag">Ashfield</span>
+            <span class="suburb-tag">Summer Hill</span>
+            <span class="suburb-tag">Homebush</span>
+            <span class="suburb-tag">Concord</span>
+            <span class="suburb-tag">Rhodes</span>
+            <span class="suburb-tag">Auburn</span>
+            <span class="suburb-tag">Lidcombe</span>
+            <span class="suburb-tag">Flemington</span>
+          </div>
+          <a href="booking.html" class="font-headline font-bold text-sm text-primary flex items-center gap-1.5 hover:gap-2.5 transition-all">
+            Book in this area
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </a>
+        </div>
+
+        <!-- Parramatta & Hills -->
+        <div class="area-card">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h2 class="font-headline font-black text-xl text-stone-950 tracking-normal">Parramatta & Hills</h2>
+              <p class="font-headline text-sm text-stone-400 mt-0.5">20km – 35km from CBD</p>
+            </div>
+            <span class="text-[10px] font-headline font-bold uppercase tracking-[0.18em] text-primary px-2.5 py-1 rounded-full" style="background:rgba(238,61,17,0.08);">Active</span>
+          </div>
+          <div class="flex flex-wrap gap-y-1 mb-5">
+            <span class="suburb-tag">Parramatta</span>
+            <span class="suburb-tag">Westmead</span>
+            <span class="suburb-tag">Northmead</span>
+            <span class="suburb-tag">Merrylands</span>
+            <span class="suburb-tag">Baulkham Hills</span>
+            <span class="suburb-tag">Castle Hill</span>
+            <span class="suburb-tag">Kellyville</span>
+            <span class="suburb-tag">Rouse Hill</span>
+          </div>
+          <a href="booking.html" class="font-headline font-bold text-sm text-primary flex items-center gap-1.5 hover:gap-2.5 transition-all">
+            Book in this area
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </a>
+        </div>
+
+        <!-- Northern Beaches -->
+        <div class="area-card">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h2 class="font-headline font-black text-xl text-stone-950 tracking-normal">Northern Beaches</h2>
+              <p class="font-headline text-sm text-stone-400 mt-0.5">15km – 40km from CBD</p>
+            </div>
+            <span class="text-[10px] font-headline font-bold uppercase tracking-[0.18em] text-stone-400 px-2.5 py-1 rounded-full bg-stone-100">Limited</span>
+          </div>
+          <div class="flex flex-wrap gap-y-1 mb-5">
+            <span class="suburb-tag">Manly</span>
+            <span class="suburb-tag">Fairlight</span>
+            <span class="suburb-tag">Balgowlah</span>
+            <span class="suburb-tag">Dee Why</span>
+            <span class="suburb-tag">Collaroy</span>
+            <span class="suburb-tag">Narrabeen</span>
+            <span class="suburb-tag">Mona Vale</span>
+            <span class="suburb-tag">Avalon</span>
+          </div>
+          <a href="booking.html" class="font-headline font-bold text-sm text-primary flex items-center gap-1.5 hover:gap-2.5 transition-all">
+            Check availability
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </a>
+        </div>
+
+        <!-- St George & Sutherland -->
+        <div class="area-card">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h2 class="font-headline font-black text-xl text-stone-950 tracking-normal">St George & Sutherland</h2>
+              <p class="font-headline text-sm text-stone-400 mt-0.5">15km – 35km from CBD</p>
+            </div>
+            <span class="text-[10px] font-headline font-bold uppercase tracking-[0.18em] text-primary px-2.5 py-1 rounded-full" style="background:rgba(238,61,17,0.08);">Active</span>
+          </div>
+          <div class="flex flex-wrap gap-y-1 mb-5">
+            <span class="suburb-tag">Hurstville</span>
+            <span class="suburb-tag">Kogarah</span>
+            <span class="suburb-tag">Rockdale</span>
+            <span class="suburb-tag">Brighton-Le-Sands</span>
+            <span class="suburb-tag">Cronulla</span>
+            <span class="suburb-tag">Miranda</span>
+            <span class="suburb-tag">Sutherland</span>
+            <span class="suburb-tag">Caringbah</span>
+          </div>
+          <a href="booking.html" class="font-headline font-bold text-sm text-primary flex items-center gap-1.5 hover:gap-2.5 transition-all">
+            Book in this area
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Legend ── -->
+  <section class="py-8 px-6 md:px-16 bg-stone-50 border-t border-stone-100">
+    <div class="max-w-screen-xl mx-auto flex flex-wrap gap-6 items-center">
+      <p class="font-headline font-bold text-sm text-stone-500 uppercase tracking-[0.15em]">Coverage key</p>
+      <div class="flex items-center gap-2">
+        <span class="text-[10px] font-headline font-bold uppercase tracking-[0.18em] text-primary px-2.5 py-1 rounded-full" style="background:rgba(238,61,17,0.08);">Active</span>
+        <span class="font-headline text-sm text-stone-500">Full availability, same-week bookings</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-[10px] font-headline font-bold uppercase tracking-[0.18em] text-stone-400 px-2.5 py-1 rounded-full bg-stone-100">Limited</span>
+        <span class="font-headline text-sm text-stone-500">Select days, enquire first</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA ── -->
+  <section class="py-20 md:py-24 px-6 text-center relative overflow-hidden" style="background:#EE3D11;">
+    <div class="relative z-10 max-w-2xl mx-auto">
+      <h2 class="font-headline font-black text-4xl md:text-5xl text-white tracking-normal leading-[1.0] mb-4">
+        Ready to book?
+      </h2>
+      <p class="text-white/75 font-headline text-lg mb-8">
+        Tell us your suburb and we'll confirm availability instantly.
+      </p>
+      <a href="booking.html" class="inline-block bg-white font-headline font-extrabold text-primary px-10 py-4 rounded-md text-base tracking-tight hover:bg-white/90 active:scale-[0.98] transition-all shadow-xl">
+        Book Your Mechanic
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<!-- ── Mobile Bottom Nav ── -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-stone-100 flex justify-around items-center px-2 py-2 pb-[env(safe-area-inset-bottom)]">
+  <a class="flex flex-col items-center justify-center text-stone-400 hover:text-stone-900 active:translate-y-0.5 transition-all" href="index.html">
+    <span class="material-symbols-outlined text-[22px]">build</span>
+    <span class="font-label text-[9px] uppercase tracking-widest font-semibold mt-1">Services</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-stone-400 hover:text-stone-900 active:translate-y-0.5 transition-all" href="diagnostics.html">
+    <span class="material-symbols-outlined text-[22px]">biotech</span>
+    <span class="font-label text-[9px] uppercase tracking-widest font-semibold mt-1">Diagnostics</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-primary bg-stone-200/50 rounded-xl px-4 py-1 active:translate-y-0.5 transition-all" href="service-areas.html">
+    <span class="material-symbols-outlined text-[22px]">map</span>
+    <span class="font-label text-[9px] uppercase tracking-widest font-semibold mt-1">Service Areas</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-stone-400 hover:text-stone-900 active:translate-y-0.5 transition-all" href="booking.html">
+    <span class="material-symbols-outlined text-[22px]">event</span>
+    <span class="font-label text-[9px] uppercase tracking-widest font-semibold mt-1">Book Now</span>
+  </a>
+</nav>
+
+</body>
+</html>

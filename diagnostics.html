@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Diagnostics — Mechanic2U</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Rethink+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#EE3D11",
+          "primary-container": "#ff6040",
+          "outline": "#907067",
+          "surface-variant": "#e5e2e1",
+          "outline-variant": "#e4beb4",
+          "surface-container": "#f0eded",
+          "on-surface": "#1c1b1b",
+          "surface-bright": "#fcf9f8",
+          "secondary": "#546067",
+          "on-surface-variant": "#5b4039",
+          "background": "#fcf9f8",
+          "surface-container-low": "#f6f3f2",
+          "on-primary": "#ffffff",
+          "surface": "#fcf9f8",
+          "error": "#ba1a1a",
+        },
+        fontFamily: {
+          "headline": ["Rethink Sans"],
+          "body": ["Inter"],
+          "label": ["Inter"]
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9990;
+    pointer-events: none;
+    opacity: 0.022;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 160px 160px;
+  }
+  .signature-gradient { background: #EE3D11; }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .load-reveal { opacity: 0; transform: translateY(20px); animation: loadUp 0.75s cubic-bezier(0.16,1,0.3,1) forwards; }
+  @keyframes loadUp { to { opacity: 1; transform: translateY(0); } }
+  .sr { opacity: 1; transform: none; }
+  .nav-link { position: relative; }
+  .nav-link::after { content: ''; position: absolute; bottom: -3px; left: 0; width: 0; height: 1.5px; background: #EE3D11; transition: width 0.28s ease; }
+  .nav-link:hover::after { width: 100%; }
+  .text-balance { text-wrap: balance; }
+
+  /* ── Code input ── */
+  .code-input {
+    font-family: 'Inter', monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border: 2px solid #e4beb4;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    background: white;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+    color: #1c1b1b;
+  }
+  .code-input:focus { border-color: #EE3D11; box-shadow: 0 0 0 4px rgba(238,61,17,0.1); }
+  .code-input::placeholder { color: #d4c4be; font-weight: 400; letter-spacing: 0.05em; font-size: 1.1rem; }
+
+  /* ── Result card ── */
+  .result-card {
+    border-radius: 14px;
+    border: 1.5px solid #e4beb4;
+    background: white;
+    overflow: hidden;
+    animation: loadUp 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
+  }
+
+  /* ── Severity badge ── */
+  .badge-info    { background: #e8f5e9; color: #2e7d32; }
+  .badge-warning { background: #fff8e1; color: #f57f17; }
+  .badge-critical{ background: #ffebee; color: #c62828; }
+  .badge-unknown { background: #f5f5f5; color: #616161; }
+
+  /* ── Symptom chip ── */
+  .symptom-chip {
+    cursor: pointer;
+    border: 1.5px solid #e4beb4;
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    color: #5b4039;
+    background: white;
+    transition: border-color 0.18s, background 0.18s, color 0.18s, transform 0.15s cubic-bezier(0.16,1,0.3,1);
+    user-select: none;
+  }
+  .symptom-chip:hover { border-color: #EE3D11; color: #EE3D11; transform: translateY(-1px); }
+  .symptom-chip.active { background: #EE3D11; border-color: #EE3D11; color: white; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(238,61,17,0.2); }
+
+  /* ── Symptom results slide ── */
+  #symptom-results {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.6s cubic-bezier(0.16,1,0.3,1), opacity 0.4s ease;
+    opacity: 0;
+  }
+  #symptom-results.open { max-height: 600px; opacity: 1; }
+
+  /* ── Loading pulse ── */
+  .loading-dot { display: inline-block; animation: pulse 1.4s ease-in-out infinite; }
+  .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
+
+  /* ── Service grid card ── */
+  .service-tile {
+    border: 1.5px solid #e4beb4;
+    border-radius: 14px;
+    padding: 1.5rem;
+    background: white;
+    transition: border-color 0.2s, transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s;
+  }
+  .service-tile:hover { border-color: #EE3D11; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(238,61,17,0.08); }
+
+  /* ── Step connector ── */
+  .step-connector { width: 1px; height: 2.5rem; background: linear-gradient(to bottom, #e4beb4, transparent); margin: 0 auto; }
+</style>
+</head>
+<body class="bg-background text-on-background font-body overflow-x-hidden">
+
+<!-- ── Nav ── -->
+<header class="bg-white/80 backdrop-blur-xl fixed top-0 w-full z-50 border-b border-outline-variant/10">
+  <nav class="flex justify-between items-center px-6 md:px-12 py-2 max-w-screen-2xl mx-auto">
+    <div class="load-reveal" style="animation-delay:0s">
+      <a href="index.html">
+        <img alt="Mechanic2U" class="h-20 w-auto" src="mechaniclogo.png"/>
+      </a>
+    </div>
+    <div class="hidden md:flex items-center gap-10 load-reveal" style="animation-delay:0.06s">
+      <a class="nav-link text-stone-400 font-headline text-sm tracking-tight hover:text-on-surface transition-colors" href="index.html">Service</a>
+      <a class="nav-link text-primary font-bold font-headline text-sm tracking-tight" href="diagnostics.html">Diagnostics</a>
+      <a class="nav-link text-stone-400 font-headline text-sm tracking-tight hover:text-on-surface transition-colors" href="#">My Garage</a>
+    </div>
+    <div class="load-reveal" style="animation-delay:0.12s">
+      <a href="booking.html" class="signature-gradient text-white px-6 py-2.5 rounded-md font-headline font-bold text-sm tracking-tight hover:opacity-90 active:scale-95 transition-opacity shadow-lg shadow-primary/20 inline-block">
+        Book Now
+      </a>
+    </div>
+  </nav>
+</header>
+
+<main class="pt-20">
+
+  <!-- ── Page header ── -->
+  <div class="relative overflow-hidden border-b border-outline-variant/20" style="background:#EE3D11;">
+    <div class="max-w-screen-xl mx-auto px-6 md:px-16 py-12 md:py-16">
+      <div class="load-reveal" style="animation-delay:0.1s">
+        <h1 class="font-headline font-black leading-[0.9] text-4xl md:text-6xl tracking-normal mb-3 text-white" style="letter-spacing:0.02em;">
+          We Read Your<br/>Car. On The Spot.
+        </h1>
+        <p class="text-white/70 text-sm font-light leading-relaxed max-w-md">Engine lights, fault codes, electrical gremlins — we bring OBD-II diagnostic tools to your driveway and give you a full written report.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Fault Code Lookup ── -->
+  <section class="py-16 md:py-24 border-b border-outline-variant/15">
+    <div class="max-w-screen-xl mx-auto px-6 md:px-16">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+
+        <!-- Left: lookup tool -->
+        <div class="sr">
+          <h2 class="font-headline font-black text-3xl md:text-4xl tracking-normal mb-2" style="letter-spacing:0.02em;">Know What<br/>Your Code Means</h2>
+          <p class="text-on-surface-variant text-sm font-light leading-relaxed mb-8">Enter an OBD-II code from your scanner or dashboard. Data sourced live from a public fault code database.</p>
+
+          <div class="relative mb-4">
+            <input
+              id="code-input"
+              class="code-input pr-14"
+              type="text"
+              placeholder="e.g. P0420"
+              maxlength="6"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <button onclick="lookupCode()" class="absolute right-3 top-1/2 -translate-y-1/2 signature-gradient text-white rounded-lg w-10 h-10 flex items-center justify-center hover:opacity-90 active:scale-95 transition-opacity shadow-md shadow-primary/20">
+              <span class="material-symbols-outlined text-[20px]">search</span>
+            </button>
+          </div>
+
+          <!-- Status line -->
+          <div id="db-status" class="flex items-center gap-2 mb-6">
+            <div class="w-1.5 h-1.5 rounded-full bg-stone-300" id="db-dot"></div>
+            <span class="text-[10px] font-label text-stone-400" id="db-status-text">Loading fault code database…</span>
+          </div>
+
+          <!-- Result -->
+          <div id="lookup-result" class="hidden"></div>
+        </div>
+
+        <!-- Right: common codes quick reference -->
+        <div class="sr" style="transition-delay:0.12s">
+          <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-on-surface-variant font-label mb-4">Common Codes</p>
+          <div id="common-codes" class="flex flex-col gap-2">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Symptom Checker ── -->
+  <section class="py-16 md:py-24 border-b border-outline-variant/15 bg-surface-container-low/40">
+    <div class="max-w-screen-xl mx-auto px-6 md:px-16">
+      <div class="sr mb-10">
+        <h2 class="font-headline font-black text-3xl md:text-4xl tracking-normal mb-2" style="letter-spacing:0.02em;">What's Your Car<br/>Telling You?</h2>
+        <p class="text-on-surface-variant text-sm font-light leading-relaxed">Select any symptoms — we'll show the likely fault areas.</p>
+      </div>
+
+      <div class="flex flex-wrap gap-3 mb-8 sr" style="transition-delay:0.1s" id="symptom-chips">
+        <button class="symptom-chip" data-symptom="check-engine" onclick="toggleSymptom(this)">
+          <span class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[15px]" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;">warning</span>
+            Check Engine Light
+          </span>
+        </button>
+        <button class="symptom-chip" data-symptom="rough-idle" onclick="toggleSymptom(this)">
+          <span class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[15px]">sensors</span>
+            Rough Idle
+          </span>
+        </button>
+        <button class="symptom-chip" data-symptom="hard-start" onclick="toggleSymptom(this)">
+          <span class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[15px]">key</span>
+            Hard to Start
+          </span>
+        </button>
+        <button class="symptom-chip" data-symptom="noise" onclick="toggleSymptom(this)">
+          <span class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[15px]">volume_up</span>
+            Unusual Noise
+          </span>
+        </button>
+        <button class="symptom-chip" data-symptom="acceleration" onclick="toggleSymptom(this)">
+          <span class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[15px]">speed</span>
+            Poor Acceleration
+          </span>
+        </button>
+        <button class="symptom-chip" data-symptom="overheat" onclick="toggleSymptom(this)">
+          <span class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[15px]" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;">local_fire_department</span>
+            Overheating
+          </span>
+        </button>
+        <button class="symptom-chip" data-symptom="oil" onclick="toggleSymptom(this)">
+          <span class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[15px]">oil_barrel</span>
+            Oil Warning
+          </span>
+        </button>
+        <button class="symptom-chip" data-symptom="battery" onclick="toggleSymptom(this)">
+          <span class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[15px]">battery_alert</span>
+            Battery Warning
+          </span>
+        </button>
+        <button class="symptom-chip" data-symptom="brakes" onclick="toggleSymptom(this)">
+          <span class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[15px]">emergency_heat</span>
+            Brake Issues
+          </span>
+        </button>
+        <button class="symptom-chip" data-symptom="transmission" onclick="toggleSymptom(this)">
+          <span class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[15px]">settings</span>
+            Transmission Slip
+          </span>
+        </button>
+        <button class="symptom-chip" data-symptom="smoke" onclick="toggleSymptom(this)">
+          <span class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[15px]">cloud</span>
+            Smoke / Exhaust
+          </span>
+        </button>
+        <button class="symptom-chip" data-symptom="stall" onclick="toggleSymptom(this)">
+          <span class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[15px]">block</span>
+            Engine Stalling
+          </span>
+        </button>
+      </div>
+
+      <!-- Results -->
+      <div id="symptom-results">
+        <div class="bg-white rounded-2xl border border-outline-variant/30 p-8 shadow-[0_4px_32px_rgba(0,0,0,0.05)]">
+          <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-primary font-label mb-5">Likely Fault Areas</p>
+          <div id="symptom-result-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-7"></div>
+          <a href="booking.html" class="inline-flex items-center gap-2 signature-gradient text-white px-7 py-3 rounded-md font-headline font-bold text-sm tracking-tight hover:opacity-90 active:scale-95 transition-opacity shadow-lg shadow-primary/20">
+            Book a Diagnostic
+            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── What We Diagnose ── -->
+  <section class="py-16 md:py-24 border-b border-outline-variant/15">
+    <div class="max-w-screen-xl mx-auto px-6 md:px-16">
+      <div class="sr mb-12">
+        <h2 class="font-headline font-black text-3xl md:text-4xl tracking-normal" style="letter-spacing:0.02em;">What We Diagnose</h2>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div class="service-tile sr" style="transition-delay:0s">
+          <span class="material-symbols-outlined text-primary text-[28px] mb-3 block" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 48;">settings</span>
+          <p class="font-headline font-bold text-sm text-on-surface mb-1">Engine Management</p>
+          <p class="text-on-surface-variant text-xs font-light leading-relaxed">ECU faults, fuel system, ignition, emissions</p>
+        </div>
+        <div class="service-tile sr" style="transition-delay:0.08s">
+          <span class="material-symbols-outlined text-primary text-[28px] mb-3 block" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 48;">bolt</span>
+          <p class="font-headline font-bold text-sm text-on-surface mb-1">Electrical & Wiring</p>
+          <p class="text-on-surface-variant text-xs font-light leading-relaxed">Short circuits, sensor failures, CAN bus issues</p>
+        </div>
+        <div class="service-tile sr" style="transition-delay:0.16s">
+          <span class="material-symbols-outlined text-primary text-[28px] mb-3 block" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 48;">sync_alt</span>
+          <p class="font-headline font-bold text-sm text-on-surface mb-1">Transmission</p>
+          <p class="text-on-surface-variant text-xs font-light leading-relaxed">Gear slip, shift solenoids, torque converter</p>
+        </div>
+        <div class="service-tile sr" style="transition-delay:0.24s">
+          <span class="material-symbols-outlined text-primary text-[28px] mb-3 block" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 48;">emergency_heat</span>
+          <p class="font-headline font-bold text-sm text-on-surface mb-1">ABS & Brakes</p>
+          <p class="text-on-surface-variant text-xs font-light leading-relaxed">ABS module, wheel speed sensors, brake pressure</p>
+        </div>
+        <div class="service-tile sr" style="transition-delay:0.32s">
+          <span class="material-symbols-outlined text-primary text-[28px] mb-3 block" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 48;">ac_unit</span>
+          <p class="font-headline font-bold text-sm text-on-surface mb-1">Air Conditioning</p>
+          <p class="text-on-surface-variant text-xs font-light leading-relaxed">Refrigerant faults, compressor, climate control</p>
+        </div>
+        <div class="service-tile sr" style="transition-delay:0.4s">
+          <span class="material-symbols-outlined text-primary text-[28px] mb-3 block" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 48;">battery_full</span>
+          <p class="font-headline font-bold text-sm text-on-surface mb-1">Battery & Charging</p>
+          <p class="text-on-surface-variant text-xs font-light leading-relaxed">Alternator output, battery health, parasitic drain</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── How It Works ── -->
+  <section class="py-16 md:py-24 border-b border-outline-variant/15 bg-surface-container-low/40">
+    <div class="max-w-screen-xl mx-auto px-6 md:px-16">
+      <div class="sr mb-12">
+        <h2 class="font-headline font-black text-3xl md:text-4xl tracking-normal" style="letter-spacing:0.02em;">How It Works</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="sr" style="transition-delay:0s">
+          <div class="w-10 h-10 rounded-full signature-gradient flex items-center justify-center mb-5 shadow-md shadow-primary/25">
+            <span class="text-white font-headline font-black text-sm">1</span>
+          </div>
+          <p class="font-headline font-bold text-base text-on-surface mb-2">We Come To You</p>
+          <p class="text-on-surface-variant text-sm font-light leading-relaxed">Book online — we arrive at your home, work, or anywhere in Greater Sydney.</p>
+        </div>
+        <div class="sr" style="transition-delay:0.12s">
+          <div class="w-10 h-10 rounded-full signature-gradient flex items-center justify-center mb-5 shadow-md shadow-primary/25">
+            <span class="text-white font-headline font-black text-sm">2</span>
+          </div>
+          <p class="font-headline font-bold text-base text-on-surface mb-2">Full OBD-II Scan</p>
+          <p class="text-on-surface-variant text-sm font-light leading-relaxed">We connect our professional scanner and read all fault codes across every system.</p>
+        </div>
+        <div class="sr" style="transition-delay:0.24s">
+          <div class="w-10 h-10 rounded-full signature-gradient flex items-center justify-center mb-5 shadow-md shadow-primary/25">
+            <span class="text-white font-headline font-black text-sm">3</span>
+          </div>
+          <p class="font-headline font-bold text-base text-on-surface mb-2">Written Report</p>
+          <p class="text-on-surface-variant text-sm font-light leading-relaxed">You receive a plain-language report of every fault found, with recommended next steps.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA ── -->
+  <section class="py-20 md:py-28">
+    <div class="max-w-screen-xl mx-auto px-6 md:px-16 text-center sr">
+      <h2 class="font-headline font-black text-4xl md:text-6xl tracking-normal mb-4 text-balance" style="letter-spacing:0.02em;">Stop Guessing.<br/>Get Answers.</h2>
+      <p class="text-on-surface-variant font-light leading-relaxed mb-8 max-w-sm mx-auto">A diagnostic visit starts from $99. We come to you, scan every system, and tell you exactly what's wrong.</p>
+      <a href="booking.html" class="inline-flex items-center gap-2 signature-gradient text-white px-8 py-3.5 rounded-md font-headline font-bold text-sm tracking-tight hover:opacity-90 active:scale-95 transition-opacity shadow-xl shadow-primary/20">
+        Book a Diagnostic
+        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<!-- ── Footer ── -->
+<footer class="bg-stone-950 w-full py-14 px-8">
+  <div class="max-w-screen-xl mx-auto flex flex-col items-center gap-8 text-center">
+    <img alt="Mechanic2U" class="h-12 w-auto brightness-0 invert opacity-75" src="mechaniclogo.png"/>
+    <div class="flex flex-wrap justify-center gap-8 text-stone-500 font-label text-[10px] uppercase tracking-[0.22em]">
+      <a class="hover:text-primary transition-colors" href="#">Inner West</a>
+      <a class="hover:text-primary transition-colors" href="#">Eastern Suburbs</a>
+      <a class="hover:text-primary transition-colors" href="#">North Shore</a>
+      <a class="hover:text-primary transition-colors" href="#">Western Sydney</a>
+    </div>
+    <p class="text-[10px] text-stone-600 uppercase tracking-[0.2em] font-label">© 2024 Mechanic2U Sydney. Mobile Mechanic Service.</p>
+  </div>
+</footer>
+
+<!-- ── Mobile Bottom Nav ── -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-stone-100 flex justify-around items-center px-2 py-2 pb-[env(safe-area-inset-bottom)]">
+  <a class="flex flex-col items-center justify-center text-stone-400 hover:text-stone-900 active:translate-y-0.5 transition-all" href="index.html">
+    <span class="material-symbols-outlined text-[22px]">build</span>
+    <span class="font-label text-[9px] uppercase tracking-widest font-semibold mt-1">Services</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-primary bg-stone-200/50 rounded-xl px-4 py-1 active:translate-y-0.5 transition-all" href="diagnostics.html">
+    <span class="material-symbols-outlined text-[22px]">biotech</span>
+    <span class="font-label text-[9px] uppercase tracking-widest font-semibold mt-1">Diagnostics</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-stone-400 hover:text-stone-900 active:translate-y-0.5 transition-all" href="service-areas.html">
+    <span class="material-symbols-outlined text-[22px]">map</span>
+    <span class="font-label text-[9px] uppercase tracking-widest font-semibold mt-1">Service Areas</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-stone-400 hover:text-stone-900 active:translate-y-0.5 transition-all" href="booking.html">
+    <span class="material-symbols-outlined text-[22px]">event</span>
+    <span class="font-label text-[9px] uppercase tracking-widest font-semibold mt-1">Book Now</span>
+  </a>
+</nav>
+
+<script>
+// ── OBD Code Database ─────────────────────────────
+// Fallback dataset (used if fetch fails)
+const FALLBACK_CODES = {
+  "P0100": { description: "Mass or Volume Air Flow Circuit Malfunction", system: "Engine", severity: "warning", causes: ["Dirty/faulty MAF sensor", "Air leak in intake", "Wiring issue"] },
+  "P0101": { description: "Mass or Volume Air Flow Circuit Range/Performance", system: "Engine", severity: "warning", causes: ["Clogged air filter", "MAF sensor contamination", "Vacuum leak"] },
+  "P0110": { description: "Intake Air Temperature Circuit Malfunction", system: "Engine", severity: "info", causes: ["Faulty IAT sensor", "Open/short in circuit", "Poor connection"] },
+  "P0113": { description: "Intake Air Temperature Circuit High Input", system: "Engine", severity: "info", causes: ["Faulty IAT sensor", "Open circuit", "Disconnected connector"] },
+  "P0116": { description: "Engine Coolant Temperature Circuit Range/Performance", system: "Engine", severity: "warning", causes: ["Faulty coolant temp sensor", "Thermostat stuck open", "Low coolant level"] },
+  "P0118": { description: "Engine Coolant Temperature Circuit High Input", system: "Engine", severity: "warning", causes: ["Open circuit in sensor", "Faulty ECT sensor", "Loose connector"] },
+  "P0120": { description: "Throttle Position Sensor Circuit Malfunction", system: "Engine", severity: "warning", causes: ["Faulty TPS", "Wiring issue", "Idle calibration needed"] },
+  "P0125": { description: "Insufficient Coolant Temperature for Closed Loop", system: "Engine", severity: "warning", causes: ["Stuck open thermostat", "Faulty coolant sensor", "Low coolant"] },
+  "P0128": { description: "Coolant Temperature Below Thermostat Regulating Temperature", system: "Engine", severity: "info", causes: ["Stuck open thermostat", "Faulty coolant sensor"] },
+  "P0130": { description: "O2 Sensor Circuit Malfunction (Bank 1, Sensor 1)", system: "Engine", severity: "warning", causes: ["Faulty O2 sensor", "Exhaust leak", "Wiring damage"] },
+  "P0133": { description: "O2 Sensor Circuit Slow Response (Bank 1, Sensor 1)", system: "Engine", severity: "warning", causes: ["Aged/contaminated O2 sensor", "Exhaust leak", "Fuel mixture issues"] },
+  "P0141": { description: "O2 Sensor Heater Circuit Malfunction (Bank 1, Sensor 2)", system: "Engine", severity: "info", causes: ["Faulty O2 sensor heater", "Blown fuse", "Wiring fault"] },
+  "P0171": { description: "System Too Lean (Bank 1)", system: "Engine", severity: "warning", causes: ["Vacuum leak", "Dirty MAF sensor", "Clogged fuel injectors", "Low fuel pressure"] },
+  "P0172": { description: "System Too Rich (Bank 1)", system: "Engine", severity: "warning", causes: ["Leaking fuel injector", "High fuel pressure", "Faulty O2 sensor"] },
+  "P0174": { description: "System Too Lean (Bank 2)", system: "Engine", severity: "warning", causes: ["Vacuum leak", "Low fuel pressure", "MAF sensor fault"] },
+  "P0175": { description: "System Too Rich (Bank 2)", system: "Engine", severity: "warning", causes: ["Faulty injectors", "High fuel pressure", "Faulty O2 sensors"] },
+  "P0200": { description: "Injector Circuit Malfunction", system: "Engine", severity: "critical", causes: ["Faulty fuel injector", "Open circuit", "ECU fault"] },
+  "P0218": { description: "Transmission Over Temperature Condition", system: "Transmission", severity: "critical", causes: ["Low fluid", "Clogged cooler", "Slipping clutches"] },
+  "P0261": { description: "Cylinder 1 Injector Circuit Low", system: "Engine", severity: "critical", causes: ["Faulty injector", "Open/short in wiring", "ECU issue"] },
+  "P0300": { description: "Random/Multiple Cylinder Misfire Detected", system: "Engine", severity: "critical", causes: ["Worn spark plugs", "Faulty ignition coils", "Low compression", "Vacuum leak"] },
+  "P0301": { description: "Cylinder 1 Misfire Detected", system: "Engine", severity: "critical", causes: ["Faulty spark plug or coil", "Clogged injector", "Low compression"] },
+  "P0302": { description: "Cylinder 2 Misfire Detected", system: "Engine", severity: "critical", causes: ["Faulty spark plug or coil", "Clogged injector", "Low compression"] },
+  "P0303": { description: "Cylinder 3 Misfire Detected", system: "Engine", severity: "critical", causes: ["Faulty spark plug or coil", "Clogged injector", "Low compression"] },
+  "P0304": { description: "Cylinder 4 Misfire Detected", system: "Engine", severity: "critical", causes: ["Faulty spark plug or coil", "Clogged injector", "Low compression"] },
+  "P0316": { description: "Misfire Detected On Startup (First 1000 Revolutions)", system: "Engine", severity: "critical", causes: ["Worn spark plugs", "Fuel delivery issue", "Low compression"] },
+  "P0325": { description: "Knock Sensor 1 Circuit Malfunction", system: "Engine", severity: "warning", causes: ["Faulty knock sensor", "Loose mounting", "Wiring fault"] },
+  "P0335": { description: "Crankshaft Position Sensor A Circuit Malfunction", system: "Engine", severity: "critical", causes: ["Faulty CKP sensor", "Damaged reluctor ring", "Wiring fault"] },
+  "P0340": { description: "Camshaft Position Sensor A Circuit Malfunction", system: "Engine", severity: "critical", causes: ["Faulty CMP sensor", "Timing belt/chain issue", "Wiring fault"] },
+  "P0351": { description: "Ignition Coil A Primary/Secondary Circuit Malfunction", system: "Engine", severity: "critical", causes: ["Faulty ignition coil", "Open/short circuit", "ECU fault"] },
+  "P0400": { description: "Exhaust Gas Recirculation Flow Malfunction", system: "Engine", severity: "warning", causes: ["Clogged EGR valve", "Faulty EGR solenoid", "Vacuum leak"] },
+  "P0401": { description: "Exhaust Gas Recirculation Insufficient Flow", system: "Engine", severity: "warning", causes: ["Clogged EGR passages", "Faulty DPFE sensor", "Stuck EGR valve"] },
+  "P0410": { description: "Secondary Air Injection System Malfunction", system: "Engine", severity: "warning", causes: ["Faulty air pump", "Clogged hoses", "Check valve failure"] },
+  "P0420": { description: "Catalyst System Efficiency Below Threshold (Bank 1)", system: "Engine", severity: "warning", causes: ["Worn catalytic converter", "Faulty O2 sensors", "Exhaust leak before cat", "Engine misfire"] },
+  "P0430": { description: "Catalyst System Efficiency Below Threshold (Bank 2)", system: "Engine", severity: "warning", causes: ["Worn catalytic converter (Bank 2)", "Faulty O2 sensor", "Exhaust leak"] },
+  "P0440": { description: "Evaporative Emission Control System Malfunction", system: "Engine", severity: "info", causes: ["Loose or faulty fuel cap", "Purge valve failure", "EVAP canister fault"] },
+  "P0441": { description: "EVAP Control System Incorrect Purge Flow", system: "Engine", severity: "info", causes: ["Stuck open purge valve", "Vacuum leak in system", "Faulty sensor"] },
+  "P0442": { description: "Evaporative Emission System Small Leak Detected", system: "Engine", severity: "info", causes: ["Loose fuel cap", "Small crack in EVAP hose", "Faulty purge valve"] },
+  "P0445": { description: "Evaporative Emission System Purge Control Valve Circuit Shorted", system: "Engine", severity: "info", causes: ["Short in purge valve circuit", "Faulty purge valve", "Wiring issue"] },
+  "P0446": { description: "EVAP Control System Vent Control Circuit Malfunction", system: "Engine", severity: "info", causes: ["Faulty vent valve", "Blocked vent", "Wiring issue"] },
+  "P0455": { description: "Evaporative Emission System Large Leak Detected", system: "Engine", severity: "warning", causes: ["Missing/loose fuel cap", "Cracked EVAP hose", "Faulty purge/vent valve"] },
+  "P0456": { description: "Evaporative Emission System Very Small Leak Detected", system: "Engine", severity: "info", causes: ["Loose fuel cap", "Micro-crack in EVAP line", "Faulty sensor"] },
+  "P0500": { description: "Vehicle Speed Sensor Malfunction", system: "Engine", severity: "warning", causes: ["Faulty VSS", "Damaged tone ring", "Wiring fault"] },
+  "P0505": { description: "Idle Air Control System Malfunction", system: "Engine", severity: "warning", causes: ["Dirty/faulty IAC valve", "Vacuum leak", "Throttle body buildup"] },
+  "P0506": { description: "Idle Air Control System RPM Lower Than Expected", system: "Engine", severity: "warning", causes: ["Clogged IAC valve", "Vacuum leak", "Low idle calibration"] },
+  "P0507": { description: "Idle Air Control System RPM Higher Than Expected", system: "Engine", severity: "warning", causes: ["Stuck open IAC valve", "Throttle body dirty", "Vacuum leak"] },
+  "P0560": { description: "System Voltage Malfunction", system: "Electrical", severity: "warning", causes: ["Weak battery", "Faulty alternator", "Wiring issue", "Poor ground"] },
+  "P0562": { description: "System Voltage Low", system: "Electrical", severity: "critical", causes: ["Dead/weak battery", "Faulty alternator", "High electrical load"] },
+  "P0563": { description: "System Voltage High", system: "Electrical", severity: "critical", causes: ["Faulty voltage regulator", "Overcharging alternator", "Wiring fault"] },
+  "P0600": { description: "Serial Communication Link Malfunction", system: "Electrical", severity: "critical", causes: ["Faulty ECU", "CAN bus fault", "Wiring issue"] },
+  "P0601": { description: "Internal Control Module Memory Check Sum Error", system: "Electrical", severity: "critical", causes: ["Faulty ECU", "Need ECU reflash/replacement"] },
+  "P0606": { description: "ECM/PCM Processor Fault", system: "Electrical", severity: "critical", causes: ["Faulty PCM/ECM", "Software corruption", "Power supply issue to ECU"] },
+  "P0700": { description: "Transmission Control System (MIL Request)", system: "Transmission", severity: "warning", causes: ["Check transmission-specific codes", "TCM fault", "Solenoid issue"] },
+  "P0715": { description: "Input/Turbine Speed Sensor Circuit Malfunction", system: "Transmission", severity: "warning", causes: ["Faulty speed sensor", "Wiring fault", "Metal debris on sensor"] },
+  "P0720": { description: "Output Speed Sensor Circuit Malfunction", system: "Transmission", severity: "warning", causes: ["Faulty output speed sensor", "Wiring issue", "Low fluid"] },
+  "P0730": { description: "Incorrect Gear Ratio", system: "Transmission", severity: "critical", causes: ["Worn clutch packs", "Faulty shift solenoid", "Low/dirty fluid"] },
+  "P0740": { description: "Torque Converter Clutch Circuit Malfunction", system: "Transmission", severity: "warning", causes: ["Faulty TCC solenoid", "Low fluid", "Worn torque converter"] },
+  "P0750": { description: "Shift Solenoid A Malfunction", system: "Transmission", severity: "critical", causes: ["Faulty solenoid", "Low/dirty fluid", "Wiring issue"] },
+  "P0755": { description: "Shift Solenoid B Malfunction", system: "Transmission", severity: "critical", causes: ["Faulty solenoid B", "Transmission fluid issue", "Valve body fault"] },
+  "P0760": { description: "Shift Solenoid C Malfunction", system: "Transmission", severity: "critical", causes: ["Faulty solenoid C", "Hydraulic fault", "Wiring issue"] },
+  "P0771": { description: "Shift Solenoid E Performance/Stuck Off", system: "Transmission", severity: "critical", causes: ["Dirty fluid", "Faulty solenoid", "Valve body issue"] },
+  "C0031": { description: "Right Front Wheel Speed Sensor Circuit", system: "ABS/Brakes", severity: "critical", causes: ["Faulty wheel speed sensor", "Damaged tone ring", "Wiring fault"] },
+  "C0034": { description: "Right Front Wheel Speed Sensor Circuit Range/Performance", system: "ABS/Brakes", severity: "warning", causes: ["Faulty sensor", "Dirty tone ring", "Worn wheel bearing"] },
+  "C0040": { description: "Right Front Wheel Speed Sensor Circuit Malfunction", system: "ABS/Brakes", severity: "critical", causes: ["Open circuit in sensor", "Faulty ABS sensor", "Connector issue"] },
+  "C0051": { description: "Left Front Wheel Speed Sensor Circuit", system: "ABS/Brakes", severity: "critical", causes: ["Faulty wheel speed sensor", "Damaged reluctor ring", "Wiring issue"] },
+  "C1201": { description: "Engine Control System Malfunction", system: "ABS/Brakes", severity: "warning", causes: ["Engine fault affecting ABS", "Check engine codes first", "ECU communication fault"] },
+  "B0001": { description: "Driver Frontal Stage 1 Deployment Control", system: "Airbag/Body", severity: "critical", causes: ["Airbag module fault", "Clock spring", "Wiring harness damage"] },
+  "B0020": { description: "Passenger Frontal Stage 1 Deployment Control", system: "Airbag/Body", severity: "critical", causes: ["Airbag squib fault", "Seat occupancy sensor", "Wiring issue"] },
+  "U0001": { description: "High Speed CAN Communication Bus", system: "Network", severity: "critical", causes: ["CAN bus wiring fault", "Faulty module on network", "Poor connector"] },
+  "U0100": { description: "Lost Communication with ECM/PCM", system: "Network", severity: "critical", causes: ["Faulty ECM/PCM", "CAN bus fault", "Wiring issue", "Power/ground fault"] },
+  "U0121": { description: "Lost Communication with Anti-Lock Brake System", system: "Network", severity: "critical", causes: ["Faulty ABS module", "CAN bus fault", "Wiring/connector issue"] },
+  "U0155": { description: "Lost Communication with Instrument Panel Cluster", system: "Network", severity: "warning", causes: ["Faulty IPC", "CAN bus issue", "Wiring fault"] }
+};
+
+const COMMON_CODES = ["P0420","P0300","P0171","P0442","P0562","P0700","P0335","C0031"];
+
+const SYMPTOM_MAP = {
+  "check-engine":   { label: "Engine Management", icon: "settings",           codes: ["P0300","P0420","P0171","P0172"] },
+  "rough-idle":     { label: "Fuel / Ignition",    icon: "local_fire_department", codes: ["P0300","P0301","P0505","P0171"] },
+  "hard-start":     { label: "Starting System",    icon: "key",                codes: ["P0335","P0340","P0562","P0506"] },
+  "noise":          { label: "Mechanical Fault",   icon: "volume_up",          codes: ["P0325","P0300","P0740"] },
+  "acceleration":   { label: "Performance / Fuel", icon: "speed",              codes: ["P0171","P0101","P0120","P0200"] },
+  "overheat":       { label: "Cooling System",     icon: "thermostat",         codes: ["P0116","P0125","P0128"] },
+  "oil":            { label: "Lubrication / Oil",  icon: "oil_barrel",         codes: ["P0562","P0600"] },
+  "battery":        { label: "Electrical / Charging", icon: "bolt",            codes: ["P0562","P0563","P0560"] },
+  "brakes":         { label: "ABS / Brake System", icon: "emergency_heat",     codes: ["C0031","C0040","C1201"] },
+  "transmission":   { label: "Transmission",       icon: "sync_alt",           codes: ["P0700","P0730","P0750","P0718"] },
+  "smoke":          { label: "Exhaust / Emissions", icon: "cloud",             codes: ["P0420","P0430","P0172","P0175"] },
+  "stall":          { label: "Idle / Throttle",    icon: "block",              codes: ["P0505","P0506","P0507","P0335"] },
+};
+
+// ── State ────────────────────────────────────────
+let codesDB = {};
+let activeSymptoms = new Set();
+
+// ── Load database ────────────────────────────────
+async function loadDB() {
+  const sources = [
+    'https://raw.githubusercontent.com/myobd/obd-codes/master/obd_codes.json',
+    'https://raw.githubusercontent.com/brendanmurty/obd-codes/main/codes.json',
+  ];
+
+  for (const url of sources) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && typeof data === 'object') {
+          // Normalise to our schema
+          const normalised = {};
+          for (const [code, val] of Object.entries(data)) {
+            const key = code.toUpperCase();
+            normalised[key] = typeof val === 'string'
+              ? { description: val, system: guessSystem(key), severity: guessSeverity(key), causes: [] }
+              : { description: val.description || val.desc || val.Definition || String(val), system: val.system || guessSystem(key), severity: val.severity || guessSeverity(key), causes: val.causes || [] };
+          }
+          codesDB = { ...FALLBACK_CODES, ...normalised };
+          setDBStatus(true, `${Object.keys(codesDB).length} codes loaded from database`);
+          renderCommonCodes();
+          return;
+        }
+      }
+    } catch {}
+  }
+
+  // Fallback
+  codesDB = { ...FALLBACK_CODES };
+  setDBStatus(false, `${Object.keys(codesDB).length} codes loaded (offline dataset)`);
+  renderCommonCodes();
+}
+
+function guessSystem(code) {
+  if (code.startsWith('P')) return 'Engine';
+  if (code.startsWith('C')) return 'ABS/Brakes';
+  if (code.startsWith('B')) return 'Body';
+  if (code.startsWith('U')) return 'Network';
+  return 'Unknown';
+}
+
+function guessSeverity(code) {
+  const n = parseInt(code.slice(1));
+  if (code.startsWith('P03') || code.startsWith('P06')) return 'critical';
+  if (n >= 100 && n < 600) return 'warning';
+  return 'info';
+}
+
+function setDBStatus(online, text) {
+  document.getElementById('db-dot').className = `w-1.5 h-1.5 rounded-full ${online ? 'bg-green-400' : 'bg-amber-400'}`;
+  document.getElementById('db-status-text').textContent = text;
+}
+
+// ── Render common codes list ──────────────────────
+function renderCommonCodes() {
+  const container = document.getElementById('common-codes');
+  container.innerHTML = '';
+  COMMON_CODES.forEach((code, i) => {
+    const entry = codesDB[code];
+    if (!entry) return;
+    const badge = severityBadge(entry.severity);
+    const div = document.createElement('div');
+    div.className = 'flex items-center gap-3 p-3 bg-white rounded-xl border border-outline-variant/30 cursor-pointer hover:border-primary transition-colors group';
+    div.style.animationDelay = (i * 0.05) + 's';
+    div.onclick = () => { document.getElementById('code-input').value = code; lookupCode(); };
+    div.innerHTML = `
+      <span class="font-label font-bold text-xs text-primary w-14 shrink-0 tracking-wider">${code}</span>
+      <span class="text-on-surface text-xs font-light flex-1 leading-snug">${entry.description}</span>
+      <span class="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${badge.cls}">${badge.label}</span>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// ── Lookup ──────────────────────────────────────
+function lookupCode() {
+  const raw = document.getElementById('code-input').value.trim().toUpperCase();
+  const el = document.getElementById('lookup-result');
+
+  if (!raw) {
+    el.innerHTML = `<p class="text-on-surface-variant text-sm font-light">Please enter a code.</p>`;
+    el.classList.remove('hidden');
+    return;
+  }
+
+  const entry = codesDB[raw];
+  if (!entry) {
+    el.innerHTML = `
+      <div class="result-card p-6 border-outline-variant/30">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="font-label font-black text-xl tracking-widest text-on-surface-variant">${raw}</span>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full badge-unknown">Unknown</span>
+        </div>
+        <p class="text-on-surface-variant text-sm font-light mb-4">This code isn't in our database yet.</p>
+        <a href="booking.html" class="inline-flex items-center gap-1.5 text-primary font-headline font-bold text-sm hover:underline">
+          Book a scan to get a full diagnosis
+          <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+        </a>
+      </div>`;
+    el.classList.remove('hidden');
+    return;
+  }
+
+  const badge = severityBadge(entry.severity);
+  const causesHtml = entry.causes?.length
+    ? `<div class="mt-5"><p class="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant font-label mb-2">Common Causes</p><ul class="flex flex-col gap-1.5">${entry.causes.map(c => `<li class="flex items-start gap-2 text-xs font-light text-on-surface"><span class="text-primary mt-0.5 shrink-0">→</span>${c}</li>`).join('')}</ul></div>`
+    : '';
+
+  el.innerHTML = `
+    <div class="result-card">
+      <div class="px-6 pt-6 pb-5 border-b border-outline-variant/20">
+        <div class="flex items-start justify-between gap-4 mb-2">
+          <span class="font-label font-black text-2xl tracking-[0.12em] text-on-surface">${raw}</span>
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full mt-1 shrink-0 ${badge.cls}">${badge.label}</span>
+        </div>
+        <p class="text-on-surface font-medium text-sm leading-snug">${entry.description}</p>
+      </div>
+      <div class="px-6 py-5">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="material-symbols-outlined text-primary text-[16px]">category</span>
+          <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-primary font-label">System: ${entry.system}</span>
+        </div>
+        ${causesHtml}
+        <div class="mt-5 pt-4 border-t border-outline-variant/20">
+          <a href="booking.html" class="inline-flex items-center gap-1.5 signature-gradient text-white px-5 py-2 rounded-md font-headline font-bold text-xs tracking-tight hover:opacity-90 active:scale-95 transition-opacity shadow-md shadow-primary/20">
+            Book a Fix
+            <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
+          </a>
+        </div>
+      </div>
+    </div>`;
+  el.classList.remove('hidden');
+}
+
+function severityBadge(s) {
+  if (s === 'critical') return { cls: 'badge-critical', label: 'Critical' };
+  if (s === 'warning')  return { cls: 'badge-warning',  label: 'Warning'  };
+  if (s === 'info')     return { cls: 'badge-info',     label: 'Minor'    };
+  return { cls: 'badge-unknown', label: 'Unknown' };
+}
+
+// Enter key on input
+document.getElementById('code-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') lookupCode();
+  document.getElementById('code-input').value = document.getElementById('code-input').value.toUpperCase();
+});
+
+// ── Symptom checker ──────────────────────────────
+function toggleSymptom(btn) {
+  const s = btn.dataset.symptom;
+  if (activeSymptoms.has(s)) { activeSymptoms.delete(s); btn.classList.remove('active'); }
+  else { activeSymptoms.add(s); btn.classList.add('active'); }
+  updateSymptomResults();
+}
+
+function updateSymptomResults() {
+  const results = document.getElementById('symptom-results');
+  const grid = document.getElementById('symptom-result-grid');
+
+  if (activeSymptoms.size === 0) {
+    results.classList.remove('open');
+    return;
+  }
+
+  // Gather unique fault areas
+  const areas = new Map();
+  activeSymptoms.forEach(s => {
+    const m = SYMPTOM_MAP[s];
+    if (!m) return;
+    if (!areas.has(m.label)) areas.set(m.label, { ...m, score: 0 });
+    areas.get(m.label).score++;
+  });
+
+  // Sort by score (most matches first)
+  const sorted = [...areas.values()].sort((a, b) => b.score - a.score);
+
+  grid.innerHTML = sorted.map(a => `
+    <div class="flex items-start gap-3 p-4 bg-surface-container-low rounded-xl border border-outline-variant/20">
+      <span class="material-symbols-outlined text-primary text-[22px] shrink-0 mt-0.5" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;">${a.icon}</span>
+      <div>
+        <p class="font-headline font-bold text-sm text-on-surface">${a.label}</p>
+        <p class="text-[10px] text-on-surface-variant font-label mt-0.5">${a.codes.slice(0,3).join(', ')}</p>
+      </div>
+    </div>
+  `).join('');
+
+  results.classList.add('open');
+}
+
+
+// ── Init ─────────────────────────────────────────
+loadDB();
+</script>
+
+</body>
+</html>

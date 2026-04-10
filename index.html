@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Rethink+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "secondary-container": "#d7e4ec",
+          "primary-container": "#ff6040",
+          "on-background": "#1c1b1b",
+          "tertiary-fixed-dim": "#9ccaff",
+          "primary": "#EE3D11",
+          "outline": "#907067",
+          "surface-variant": "#e5e2e1",
+          "outline-variant": "#e4beb4",
+          "surface-container": "#f0eded",
+          "on-surface": "#1c1b1b",
+          "surface-bright": "#fcf9f8",
+          "secondary": "#546067",
+          "surface-container-highest": "#e5e2e1",
+          "surface-tint": "#EE3D11",
+          "secondary-fixed-dim": "#bbc8d0",
+          "on-error-container": "#93000a",
+          "on-secondary-fixed-variant": "#3c494f",
+          "tertiary-container": "#0079c5",
+          "surface-dim": "#dcd9d9",
+          "primary-fixed-dim": "#ffb5a0",
+          "surface-container-high": "#eae7e7",
+          "on-primary-container": "#fffbff",
+          "background": "#fcf9f8",
+          "surface-container-low": "#f6f3f2",
+          "on-tertiary": "#ffffff",
+          "surface": "#fcf9f8",
+          "inverse-primary": "#ffb5a0",
+          "secondary-fixed": "#d7e4ec",
+          "on-error": "#ffffff",
+          "on-tertiary-fixed-variant": "#00497b",
+          "on-tertiary-container": "#fdfcff",
+          "on-secondary-fixed": "#111d23",
+          "on-primary": "#ffffff",
+          "tertiary": "#005f9d",
+          "on-secondary": "#ffffff",
+          "primary-fixed": "#ffdbd1",
+          "on-primary-fixed-variant": "#872100",
+          "inverse-on-surface": "#f3f0ef",
+          "surface-container-lowest": "#ffffff",
+          "inverse-surface": "#313030",
+          "on-primary-fixed": "#3b0900",
+          "on-secondary-container": "#5a666d",
+          "error-container": "#ffdad6",
+          "on-surface-variant": "#5b4039",
+          "tertiary-fixed": "#d0e4ff",
+          "error": "#ba1a1a",
+          "on-tertiary-fixed": "#001d35"
+        },
+        borderRadius: {
+          "DEFAULT": "0.125rem",
+          "lg": "0.25rem",
+          "xl": "0.5rem",
+          "full": "9999px"
+        },
+        fontFamily: {
+          "headline": ["Rethink Sans"],
+          "body": ["Inter"],
+          "label": ["Inter"]
+        }
+      }
+    }
+  }
+</script>
+<style>
+  /* ── Grain overlay ── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9990;
+    pointer-events: none;
+    opacity: 0.022;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 160px 160px;
+  }
+
+
+  /* ── Signature gradient ── */
+  .signature-gradient { background: #EE3D11; }
+
+  /* ── Glassmorphism ── */
+  .glass-status {
+    background: rgba(252,249,248,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  /* ── Material icons ── */
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
+  /* ── Page-load stagger ── */
+  .load-reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: loadUp 0.75s cubic-bezier(0.16,1,0.3,1) forwards;
+  }
+  @keyframes loadUp { to { opacity: 1; transform: translateY(0); } }
+
+  /* ── Scroll reveal (disabled) ── */
+  .sr, .sr-left { opacity: 1; transform: none; }
+
+  /* ── Marquee ── */
+  .marquee-wrap { overflow: hidden; }
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee 32s linear infinite;
+  }
+  .marquee-wrap:hover .marquee-track { animation-play-state: paused; }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ── Ping ── */
+  @keyframes ping { 75%, 100% { transform: scale(2.2); opacity: 0; } }
+  .ping { animation: ping 1.6s cubic-bezier(0,0,0.2,1) infinite; }
+
+  /* ── Nav underline ── */
+  .nav-link { position: relative; }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -3px; left: 0;
+    width: 0; height: 1.5px;
+    background: #EE3D11;
+    transition: width 0.28s ease;
+  }
+  .nav-link:hover::after { width: 100%; }
+
+  /* ── Scroll dot ── */
+  @keyframes scrollDot {
+    0%   { transform: translateY(-100%); }
+    100% { transform: translateY(250%); }
+  }
+
+  .text-balance { text-wrap: balance; }
+
+</style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-primary-fixed selection:text-on-primary-fixed overflow-x-hidden">
+
+<!-- ── Top App Bar ── -->
+<header class="bg-white/80 backdrop-blur-xl fixed top-0 w-full z-50 border-b border-outline-variant/10">
+  <nav class="flex justify-between items-center px-6 md:px-12 py-2 max-w-screen-2xl mx-auto">
+    <div class="load-reveal" style="animation-delay:0s">
+      <img alt="Atelier Mechanic" class="h-20 w-auto" src="mechaniclogo.png"/>
+    </div>
+    <div class="hidden md:flex items-center gap-10 load-reveal" style="animation-delay:0.06s">
+      <a class="nav-link text-primary font-bold font-headline text-sm tracking-tight" href="#">Service</a>
+      <a class="nav-link text-stone-400 font-headline text-sm tracking-tight hover:text-on-surface transition-colors" href="diagnostics.html">Diagnostics</a>
+      <a class="nav-link text-stone-400 font-headline text-sm tracking-tight hover:text-on-surface transition-colors" href="service-areas.html">Service Areas</a>
+    </div>
+    <div class="load-reveal" style="animation-delay:0.12s">
+      <a href="booking.html" class="signature-gradient text-white px-6 py-2.5 rounded-md font-headline font-bold text-sm tracking-tight hover:opacity-90 active:scale-95 transition-opacity shadow-lg shadow-primary/20 inline-block">
+        Book Now
+      </a>
+    </div>
+  </nav>
+</header>
+
+<main class="pt-20">
+
+  <!-- ── Hero (full viewport, marquee pinned to bottom) ── -->
+  <section class="relative min-h-[calc(100svh-120px)] flex flex-col overflow-hidden pb-[env(safe-area-inset-bottom)]">
+    <!-- Background image + gradient overlay -->
+    <div class="absolute inset-0 z-0">
+      <img class="w-full h-full object-cover"
+           src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6cioGPDBdXMw_C2zt8lh9L9P3Ow3Wg6obtvOei6TV7jobN7x2uTqo28d8uTtdg1vfdXMVN7xkE0_j5hkwPypwL1mUrXiea_DaN4vEYYZNagub12xg33adFNlZbHmWOJwC-_0iTNxMQoAX7a5HEaXdnXvuF_jkm4sY_OdPoaioZf7pTwiQG4HnLDT3rfupejgWwERfnBb3eFIIdwX2iNA6fzsLRs0IxK1FPw4CnfjH4AnkfIiwEfysVJyG8bWg12g8envleAuuZA4Y" alt=""/>
+      <div class="absolute inset-0" style="background: linear-gradient(135deg, rgba(255,255,255,0.93) 0%, rgba(255,255,255,0.88) 50%, rgba(255,255,255,0.75) 100%);"></div>
+    </div>
+
+    <!-- Main content — fills remaining space -->
+    <div class="relative z-10 flex-1 flex items-center w-full px-6 md:px-16 lg:px-20 py-16">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 xl:gap-16 items-center max-w-screen-xl mx-auto w-full">
+
+        <!-- Left: text -->
+        <div>
+          <h1 class="load-reveal font-headline font-black leading-[0.87] mb-7 text-balance"
+              style="animation-delay:0.22s; font-size: clamp(3rem, 6vw, 6.5rem); letter-spacing: 0.02em; color: #EE3D11;">
+            Sydney's Mobile<br/>
+            Mechanic
+          </h1>
+
+          <p class="load-reveal text-lg text-stone-600 max-w-md mb-8 leading-relaxed"
+             style="animation-delay:0.36s">
+            Rejecting the clutter of traditional repairs. We bring surgical precision and digital diagnostics to your driveway across Sydney's finest postcodes.
+          </p>
+
+          <div class="load-reveal flex flex-col sm:flex-row gap-4" style="animation-delay:0.46s">
+            <button class="text-white px-8 py-4 rounded-md font-headline font-extrabold text-base tracking-tight hover:opacity-90 active:scale-[0.98] transition-opacity shadow-lg" style="background:#EE3D11; box-shadow:0 4px 16px rgba(238,61,17,0.3);">
+              Book Your Diagnostic
+            </button>
+            <button class="bg-stone-100 border border-stone-200 text-stone-800 px-8 py-4 rounded-md font-headline font-semibold text-base tracking-tight hover:bg-stone-200 transition-colors flex items-center gap-2 group">
+              View Service Areas
+              <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: map -->
+        <div class="hidden lg:block load-reveal" style="animation-delay:0.5s">
+          <iframe
+            src="https://maps.google.com/maps?q=Greater+Sydney+NSW+Australia&z=10&output=embed"
+            class="rounded-2xl shadow-2xl shadow-black/30 ring-1 ring-white/10 w-full block border-0"
+            style="height:480px;"
+            allowfullscreen
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+          <div class="mt-4 inline-flex items-center gap-3 px-4 py-2.5 rounded-full border border-stone-200 shadow-sm bg-white/80 backdrop-blur-sm">
+            <div class="relative flex h-2.5 w-2.5">
+              <span class="ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-70"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-tertiary"></span>
+            </div>
+            <span class="text-[10px] font-headline font-bold tracking-[0.2em] uppercase text-on-surface">Mechanics active in Inner West now</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Marquee pinned to bottom of hero viewport -->
+    <div class="relative z-10 bg-white/40 border-t border-stone-200/60 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] marquee-wrap backdrop-blur-sm">
+      <div class="marquee-track select-none">
+        <span class="text-[12px] font-headline font-extrabold uppercase tracking-[0.28em] text-stone-700 mx-10">Digital Diagnostics</span>
+        <span class="text-stone-400 mx-3 text-sm">·</span>
+        <span class="text-[12px] font-headline font-extrabold uppercase tracking-[0.28em] text-stone-700 mx-10">OEM-Level Hardware</span>
+        <span class="text-stone-400 mx-3 text-sm">·</span>
+        <span class="text-[12px] font-headline font-extrabold uppercase tracking-[0.28em] text-stone-700 mx-10">Mobile Service</span>
+        <span class="text-stone-400 mx-3 text-sm">·</span>
+        <span class="text-[12px] font-headline font-extrabold uppercase tracking-[0.28em] text-stone-700 mx-10">Inner West</span>
+        <span class="text-stone-400 mx-3 text-sm">·</span>
+        <span class="text-[12px] font-headline font-extrabold uppercase tracking-[0.28em] text-stone-700 mx-10">Eastern Suburbs</span>
+        <span class="text-stone-400 mx-3 text-sm">·</span>
+        <span class="text-[12px] font-headline font-extrabold uppercase tracking-[0.28em] text-stone-700 mx-10">North Shore</span>
+        <span class="text-stone-400 mx-3 text-sm">·</span>
+        <span class="text-[12px] font-headline font-extrabold uppercase tracking-[0.28em] text-stone-700 mx-10">Performance Reports</span>
+        <span class="text-stone-400 mx-3 text-sm">·</span>
+        <span class="text-[12px] font-headline font-extrabold uppercase tracking-[0.28em] text-stone-700 mx-10">4.9 / 5 Rated</span>
+        <span class="text-stone-400 mx-3 text-sm">·</span>
+        <!-- duplicate -->
+        <span class="text-[12px] font-headline font-extrabold uppercase tracking-[0.28em] text-stone-700 mx-10">Digital Diagnostics</span>
+        <span class="text-stone-400 mx-3 text-sm">·</span>
+        <span class="text-[12px] font-headline font-extrabold uppercase tracking-[0.28em] text-stone-700 mx-10">OEM-Level Hardware</span>
+        <span class="text-stone-400 mx-3 text-sm">·</span>
+        <span class="text-[12px] font-headline font-extrabold uppercase tracking-[0.28em] text-stone-700 mx-10">Mobile Service</span>
+        <span class="text-stone-400 mx-3 text-sm">·</span>
+        <span class="text-[12px] font-headline font-extrabold uppercase tracking-[0.28em] text-stone-700 mx-10">Inner West</span>
+        <span class="text-stone-400 mx-3 text-sm">·</span>
+        <span class="text-[12px] font-headline font-extrabold uppercase tracking-[0.28em] text-stone-700 mx-10">Eastern Suburbs</span>
+        <span class="text-stone-400 mx-3 text-sm">·</span>
+        <span class="text-[12px] font-headline font-extrabold uppercase tracking-[0.28em] text-stone-700 mx-10">North Shore</span>
+        <span class="text-stone-400 mx-3 text-sm">·</span>
+        <span class="text-[12px] font-headline font-extrabold uppercase tracking-[0.28em] text-stone-700 mx-10">Performance Reports</span>
+        <span class="text-stone-400 mx-3 text-sm">·</span>
+        <span class="text-[12px] font-headline font-extrabold uppercase tracking-[0.28em] text-stone-700 mx-10">4.9 / 5 Rated</span>
+        <span class="text-stone-400 mx-3 text-sm">·</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Stats Bar ── -->
+  <section class="py-5 px-6 md:px-16 bg-white border-b border-stone-100">
+    <div class="max-w-screen-xl mx-auto flex justify-center items-center gap-8 md:gap-16 flex-wrap">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl font-headline font-black text-on-surface">4.9/5</span>
+        <span class="text-[10px] uppercase tracking-[0.2em] text-stone-400 font-headline">Google Rating</span>
+      </div>
+      <div class="w-px h-7 bg-stone-200 hidden md:block"></div>
+      <div class="flex items-center gap-3">
+        <span class="text-2xl font-headline font-black text-on-surface">5+</span>
+        <span class="text-[10px] uppercase tracking-[0.2em] text-stone-400 font-headline">Monthly Repairs</span>
+      </div>
+      <div class="w-px h-7 bg-stone-200 hidden md:block"></div>
+      <div class="flex items-center gap-3">
+        <span class="text-2xl font-headline font-black text-on-surface">Same-Week</span>
+        <span class="text-[10px] uppercase tracking-[0.2em] text-stone-400 font-headline">Bookings Available</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Services ── -->
+  <section class="py-16 md:py-20 px-6 md:px-16 bg-stone-950">
+    <div class="max-w-screen-xl mx-auto">
+      <div class="flex flex-col md:flex-row justify-between items-center md:items-end mb-12 gap-4 text-center md:text-left">
+        <h2 class="text-4xl md:text-5xl font-headline font-black tracking-normal leading-[1.0] text-white sr">What We Do</h2>
+        <p class="text-stone-400 max-w-xs text-sm font-light leading-relaxed sr mx-auto md:mx-0" style="transition-delay:0.1s">Every job starts with a scan. Every job ends with a report.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-px bg-stone-800">
+        <div class="sr bg-stone-950 p-8 hover:bg-stone-900 transition-colors duration-300">
+          <span class="material-symbols-outlined text-primary text-[32px] mb-5 block" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 48;">biotech</span>
+          <h3 class="text-lg font-headline font-bold text-white mb-2">Digital Diagnostic</h3>
+          <p class="text-stone-400 text-sm font-light leading-relaxed">OEM-level systems scan to identify the root cause before a single wrench is turned.</p>
+        </div>
+        <div class="sr bg-stone-950 p-8 hover:bg-stone-900 transition-colors duration-300" style="transition-delay:0.1s">
+          <span class="material-symbols-outlined text-primary text-[32px] mb-5 block" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 48;">build_circle</span>
+          <h3 class="text-lg font-headline font-bold text-white mb-2">Precision Repair</h3>
+          <p class="text-stone-400 text-sm font-light leading-relaxed">Component repair and replacement using quality parts, with the care your vehicle deserves.</p>
+        </div>
+        <div class="sr bg-stone-950 p-8 hover:bg-stone-900 transition-colors duration-300" style="transition-delay:0.2s">
+          <span class="material-symbols-outlined text-primary text-[32px] mb-5 block" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 48;">monitoring</span>
+          <h3 class="text-lg font-headline font-bold text-white mb-2">Written Report</h3>
+          <p class="text-stone-400 text-sm font-light leading-relaxed">A full digital breakdown of every action taken, with post-repair telemetry and health forecasting.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Coverage ── -->
+  <section class="py-16 md:py-20 px-6 md:px-16 bg-surface">
+    <div class="max-w-screen-xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+      <div class="sr-left">
+        <h2 class="text-4xl md:text-5xl font-headline font-black tracking-normal leading-[1.0] mb-5">Sydney Regions<br/>We Serve</h2>
+        <p class="text-on-surface-variant text-sm font-light leading-relaxed mb-8 max-w-sm">From the Inner West to the North Shore — we come to you wherever you are in Greater Sydney.</p>
+        <a href="booking.html" class="inline-flex items-center gap-2 signature-gradient text-white px-6 py-3 rounded-md font-headline font-bold text-sm hover:opacity-90 active:scale-95 transition-opacity shadow-lg shadow-primary/20">
+          Book a Visit
+          <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+        </a>
+      </div>
+      <div class="sr divide-y divide-outline-variant/20 border border-outline-variant/20 rounded-xl overflow-hidden">
+        <div class="bg-white p-5 flex items-center justify-between group hover:bg-surface-container transition-colors duration-200">
+          <div>
+            <p class="font-headline font-bold text-base">Inner West</p>
+            <p class="text-on-surface-variant text-xs font-light mt-0.5">Balmain · Newtown · Leichhardt · Marrickville</p>
+          </div>
+          <span class="material-symbols-outlined text-stone-300 text-xl group-hover:text-primary transition-colors duration-200">chevron_right</span>
+        </div>
+        <div class="bg-white p-5 flex items-center justify-between group hover:bg-surface-container transition-colors duration-200">
+          <div>
+            <p class="font-headline font-bold text-base">Eastern Suburbs</p>
+            <p class="text-on-surface-variant text-xs font-light mt-0.5">Bondi · Randwick · Paddington · Surry Hills</p>
+          </div>
+          <span class="material-symbols-outlined text-stone-300 text-xl group-hover:text-primary transition-colors duration-200">chevron_right</span>
+        </div>
+        <div class="bg-white p-5 flex items-center justify-between group hover:bg-surface-container transition-colors duration-200">
+          <div>
+            <p class="font-headline font-bold text-base">North Shore</p>
+            <p class="text-on-surface-variant text-xs font-light mt-0.5">Mosman · Neutral Bay · Chatswood · Lane Cove</p>
+          </div>
+          <span class="material-symbols-outlined text-stone-300 text-xl group-hover:text-primary transition-colors duration-200">chevron_right</span>
+        </div>
+        <div class="bg-white p-5 flex items-center justify-between group hover:bg-surface-container transition-colors duration-200">
+          <div>
+            <p class="font-headline font-bold text-base">Western Sydney</p>
+            <p class="text-on-surface-variant text-xs font-light mt-0.5">Parramatta · Penrith · Liverpool · Blacktown</p>
+          </div>
+          <span class="material-symbols-outlined text-stone-300 text-xl group-hover:text-primary transition-colors duration-200">chevron_right</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Testimonials ── -->
+  <section class="py-16 md:py-20 px-6 md:px-16 bg-stone-50">
+    <div class="max-w-screen-xl mx-auto">
+      <h2 class="text-4xl md:text-5xl font-headline font-black tracking-normal leading-[1.0] mb-10 sr">What clients say.</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="sr bg-white p-8 rounded-2xl shadow-[0_2px_24px_rgba(0,0,0,0.05)] border border-stone-100">
+          <div class="text-primary text-base mb-4 tracking-wider">★★★★★</div>
+          <p class="text-on-surface font-light leading-relaxed mb-6">
+            "The best service in the Inner West. They treat my Mazda like their own. No grease, no noise, just pure mechanical excellence in my own garage."
+          </p>
+          <div class="flex items-center gap-3 pt-4 border-t border-stone-100">
+            <div class="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <span class="font-headline font-bold text-sm text-primary">A</span>
+            </div>
+            <div>
+              <p class="font-headline font-bold text-sm">Aabidah</p>
+              <p class="text-stone-400 text-xs mt-0.5">Hurstville</p>
+            </div>
+          </div>
+        </div>
+        <div class="sr bg-white p-8 rounded-2xl shadow-[0_2px_24px_rgba(0,0,0,0.05)] border border-stone-100" style="transition-delay:0.1s">
+          <div class="text-primary text-base mb-4 tracking-wider">★★★★★</div>
+          <p class="text-on-surface font-light leading-relaxed mb-6">
+            "I received a full digital diagnostic report before they even started. Exceptional."
+          </p>
+          <div class="flex items-center gap-3 pt-4 border-t border-stone-100">
+            <div class="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <span class="font-headline font-bold text-sm text-primary">I</span>
+            </div>
+            <div>
+              <p class="font-headline font-bold text-sm">Max</p>
+              <p class="text-stone-400 text-xs mt-0.5">Tempe</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Instagram ── -->
+  <section class="py-16 md:py-20 px-6 md:px-16 bg-white">
+    <div class="max-w-screen-xl mx-auto">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+        <div>
+          <h2 class="text-4xl md:text-5xl font-headline font-black tracking-normal leading-[1.0]">Follow Along</h2>
+          <a href="https://www.instagram.com/mechanic2u_" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 mt-2 text-stone-400 hover:text-primary transition-colors font-headline text-sm font-semibold">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            @mechanic2u_
+          </a>
+        </div>
+        <a href="https://www.instagram.com/mechanic2u_" target="_blank" rel="noopener" class="shrink-0 inline-flex items-center gap-2 border border-stone-200 text-stone-700 hover:border-primary hover:text-primary px-5 py-2.5 rounded-md font-headline font-semibold text-sm transition-colors">
+          View Profile
+          <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+        </a>
+      </div>
+      <div class="grid grid-cols-3 md:grid-cols-6 gap-2">
+        <a href="https://www.instagram.com/mechanic2u_" target="_blank" rel="noopener" class="aspect-square bg-stone-100 rounded-xl overflow-hidden group relative block">
+          <img src="instagram\instagram1.png" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Instagram post"/>
+          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 rounded-xl"></div>
+        </a>
+        <a href="https://www.instagram.com/mechanic2u_" target="_blank" rel="noopener" class="aspect-square bg-stone-100 rounded-xl overflow-hidden group relative block">
+          <img src="instagram\instagram2.png" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Instagram post"/>
+          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 rounded-xl"></div>
+        </a>
+        <a href="https://www.instagram.com/mechanic2u_" target="_blank" rel="noopener" class="aspect-square bg-stone-100 rounded-xl overflow-hidden group relative block">
+          <img src="instagram\instagram3.png" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Instagram post"/>
+          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 rounded-xl"></div>
+        </a>
+        <a href="https://www.instagram.com/mechanic2u_" target="_blank" rel="noopener" class="aspect-square bg-stone-100 rounded-xl overflow-hidden group relative block">
+          <img src="instagram\instagram4.png" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Instagram post"/>
+          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 rounded-xl"></div>
+        </a>
+        <a href="https://www.instagram.com/mechanic2u_" target="_blank" rel="noopener" class="aspect-square bg-stone-100 rounded-xl overflow-hidden group relative block">
+          <img src="instagram\instagram5.png" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Instagram post"/>
+          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 rounded-xl"></div>
+        </a>
+        <a href="https://www.instagram.com/mechanic2u_" target="_blank" rel="noopener" class="aspect-square bg-stone-100 rounded-xl overflow-hidden group relative block">
+          <img src="instagram\instagram6.png" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Instagram post"/>
+          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 rounded-xl"></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Final CTA ── -->
+  <section class="py-20 md:py-24 px-6 text-center relative overflow-hidden" style="background:#EE3D11;">
+    <div class="relative z-10 max-w-2xl mx-auto sr">
+      <h2 class="text-5xl md:text-6xl font-headline font-black tracking-normal mb-5 text-white leading-[0.92]">
+        Book a mechanic.<br/>We come to you.
+      </h2>
+      <p class="text-white/70 font-light mb-8 max-w-sm mx-auto leading-relaxed">
+        Available across Greater Sydney. Same-day appointments available.
+      </p>
+      <a href="booking.html" class="inline-block bg-white text-primary px-10 py-4 rounded-md font-headline font-black text-base tracking-tight hover:bg-white/90 active:scale-[0.98] transition-opacity shadow-xl shadow-black/10">
+        Book Now
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<!-- ── Footer ── -->
+<footer class="bg-stone-950 w-full py-14 px-8">
+  <div class="max-w-screen-xl mx-auto flex flex-col items-center gap-8 text-center">
+    <img alt="Atelier Mechanic" class="h-12 w-auto brightness-0 invert opacity-75" src="mechaniclogo.png"/>
+    <div class="flex flex-wrap justify-center gap-8 text-stone-500 font-label text-[10px] uppercase tracking-[0.22em]">
+      <a class="hover:text-primary transition-colors" href="#">Inner West</a>
+      <a class="hover:text-primary transition-colors" href="#">Eastern Suburbs</a>
+      <a class="hover:text-primary transition-colors" href="#">North Shore</a>
+      <a class="hover:text-primary transition-colors" href="#">Western Sydney</a>
+    </div>
+    <p class="text-[10px] text-stone-600 uppercase tracking-[0.2em] font-label">© 2024 Atelier Mechanic Sydney. Precision Engineering.</p>
+  </div>
+</footer>
+
+<!-- ── Mobile Bottom Nav ── -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-stone-100 flex justify-around items-center px-2 py-2 pb-[env(safe-area-inset-bottom)]">
+  <a class="flex flex-col items-center justify-center text-primary bg-stone-200/50 rounded-xl px-4 py-1 active:translate-y-0.5 transition-all" href="index.html">
+    <span class="material-symbols-outlined text-[22px]">build</span>
+    <span class="font-label text-[9px] uppercase tracking-widest font-semibold mt-1">Services</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-stone-400 hover:text-stone-900 active:translate-y-0.5 transition-all" href="diagnostics.html">
+    <span class="material-symbols-outlined text-[22px]">biotech</span>
+    <span class="font-label text-[9px] uppercase tracking-widest font-semibold mt-1">Diagnostics</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-stone-400 hover:text-stone-900 active:translate-y-0.5 transition-all" href="service-areas.html">
+    <span class="material-symbols-outlined text-[22px]">map</span>
+    <span class="font-label text-[9px] uppercase tracking-widest font-semibold mt-1">Service Areas</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-stone-400 hover:text-stone-900 active:translate-y-0.5 transition-all" href="booking.html">
+    <span class="material-symbols-outlined text-[22px]">event</span>
+    <span class="font-label text-[9px] uppercase tracking-widest font-semibold mt-1">Book Now</span>
+  </a>
+</nav>
+
+<script>
+</script>
+</body>
+</html>

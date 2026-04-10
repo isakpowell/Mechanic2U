@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Book a Service — Mechanic2U</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Rethink+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#EE3D11",
+          "primary-container": "#EE3D11",
+          "outline": "#907067",
+          "surface-variant": "#e5e2e1",
+          "outline-variant": "#e4beb4",
+          "surface-container": "#f0eded",
+          "on-surface": "#1c1b1b",
+          "surface-bright": "#fcf9f8",
+          "secondary": "#546067",
+          "surface-container-highest": "#e5e2e1",
+          "on-surface-variant": "#5b4039",
+          "background": "#fcf9f8",
+          "surface-container-low": "#f6f3f2",
+          "on-primary": "#ffffff",
+          "primary-fixed": "#ffdbd1",
+          "on-primary-fixed": "#3b0900",
+          "surface": "#fcf9f8",
+          "inverse-surface": "#313030",
+          "error": "#ba1a1a",
+        },
+        fontFamily: {
+          "headline": ["Rethink Sans"],
+          "body": ["Inter"],
+          "label": ["Inter"]
+        }
+      }
+    }
+  }
+</script>
+<style>
+  /* ── Grain overlay ── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9990;
+    pointer-events: none;
+    opacity: 0.022;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 160px 160px;
+  }
+
+  .signature-gradient { background: #EE3D11; }
+
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
+  .load-reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: loadUp 0.75s cubic-bezier(0.16,1,0.3,1) forwards;
+  }
+  @keyframes loadUp { to { opacity: 1; transform: translateY(0); } }
+
+  .nav-link { position: relative; }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -3px; left: 0;
+    width: 0; height: 1.5px;
+    background: #EE3D11;
+    transition: width 0.28s ease;
+  }
+  .nav-link:hover::after { width: 100%; }
+
+  .text-balance { text-wrap: balance; }
+
+  /* ── Step transitions ── */
+  .step-panel {
+    display: none;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1);
+  }
+  .step-panel.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .step-panel.entering {
+    display: block;
+  }
+
+  /* ── Service card ── */
+  .service-card {
+    cursor: pointer;
+    border: 1.5px solid #e4beb4;
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.18s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s ease;
+    user-select: none;
+  }
+  .service-card:hover {
+    border-color: #EE3D11;
+    background: #fff8f6;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(238,61,17,0.10);
+  }
+  .service-card.selected {
+    border-color: #EE3D11;
+    background: #fff2ee;
+    box-shadow: 0 0 0 3px rgba(238,61,17,0.12), 0 4px 16px rgba(238,61,17,0.10);
+  }
+
+  /* ── Date/time slot ── */
+  .slot-btn {
+    border: 1.5px solid #e4beb4;
+    border-radius: 8px;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    color: #5b4039;
+    cursor: pointer;
+    transition: border-color 0.18s, background 0.18s, color 0.18s, transform 0.15s cubic-bezier(0.16,1,0.3,1);
+    background: white;
+  }
+  .slot-btn:hover {
+    border-color: #EE3D11;
+    color: #EE3D11;
+  }
+  .slot-btn.selected {
+    background: #EE3D11;
+    border-color: #EE3D11;
+    color: white;
+  }
+
+  /* ── Custom input styles ── */
+  .field-input {
+    width: 100%;
+    border: 1.5px solid #e4beb4;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    color: #1c1b1b;
+    background: white;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    appearance: none;
+  }
+  .field-input:focus {
+    border-color: #EE3D11;
+    box-shadow: 0 0 0 3px rgba(238,61,17,0.10);
+  }
+  .field-input::placeholder { color: #b09890; }
+
+  select.field-input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235b4039' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+  }
+
+  /* ── Progress bar ── */
+  .progress-fill {
+    height: 2px;
+    background: #EE3D11;
+    border-radius: 2px;
+    transition: width 0.5s cubic-bezier(0.16,1,0.3,1);
+  }
+
+  /* ── Confirmation checkmark ── */
+  @keyframes checkDraw {
+    from { stroke-dashoffset: 100; }
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes circleDraw {
+    from { stroke-dashoffset: 200; }
+    to { stroke-dashoffset: 0; }
+  }
+  .check-circle { animation: circleDraw 0.6s cubic-bezier(0.16,1,0.3,1) 0.2s forwards; stroke-dasharray: 200; stroke-dashoffset: 200; }
+  .check-mark { animation: checkDraw 0.4s cubic-bezier(0.16,1,0.3,1) 0.7s forwards; stroke-dasharray: 100; stroke-dashoffset: 100; }
+
+  /* ── Summary row ── */
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f0eded;
+    font-size: 0.8125rem;
+  }
+  .summary-row:last-child { border-bottom: none; }
+</style>
+</head>
+<body class="bg-background text-on-background font-body overflow-x-hidden">
+
+<!-- ── Top App Bar ── -->
+<header class="bg-white/80 backdrop-blur-xl fixed top-0 w-full z-50 border-b border-outline-variant/10">
+  <nav class="flex justify-between items-center px-6 md:px-12 py-2 max-w-screen-2xl mx-auto">
+    <div class="load-reveal" style="animation-delay:0s">
+      <a href="index.html">
+        <img alt="Mechanic2U" class="h-20 w-auto" src="mechaniclogo.png"/>
+      </a>
+    </div>
+    <div class="hidden md:flex items-center gap-10 load-reveal" style="animation-delay:0.06s">
+      <a class="nav-link text-stone-400 font-headline text-sm tracking-tight hover:text-on-surface transition-colors" href="index.html">Service</a>
+      <a class="nav-link text-stone-400 font-headline text-sm tracking-tight hover:text-on-surface transition-colors" href="#">Diagnostics</a>
+      <a class="nav-link text-stone-400 font-headline text-sm tracking-tight hover:text-on-surface transition-colors" href="#">My Garage</a>
+    </div>
+    <div class="load-reveal" style="animation-delay:0.12s">
+      <button class="text-white px-6 py-2.5 rounded-md font-headline font-bold text-sm tracking-tight hover:opacity-90 active:scale-95 transition-opacity shadow-lg" style="background:#EE3D11; box-shadow: 0 4px 12px rgba(238,61,17,0.25);">
+        Book Now
+      </button>
+    </div>
+  </nav>
+</header>
+
+<main class="pt-20 min-h-screen">
+
+  <!-- ── Page header ── -->
+  <div class="relative overflow-hidden border-b border-outline-variant/20" style="background:#EE3D11;">
+    <div class="max-w-screen-xl mx-auto px-6 md:px-16 py-12 md:py-16">
+      <div class="load-reveal" style="animation-delay:0.1s">
+        <h1 class="font-headline font-black leading-[0.9] text-4xl md:text-6xl tracking-normal mb-3 text-white" style="letter-spacing:0.02em;">
+          Book a Service
+        </h1>
+        <p class="text-white/70 text-sm font-light leading-relaxed max-w-sm">We come to you — at home, work, or anywhere in Greater Sydney.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Booking form ── -->
+  <div class="max-w-screen-xl mx-auto px-6 md:px-16 py-12 md:py-16">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16 items-start">
+
+      <!-- Left: form -->
+      <div class="lg:col-span-2">
+
+        <!-- Progress -->
+        <div class="mb-10 load-reveal" style="animation-delay:0.18s">
+          <div class="flex items-center justify-between mb-3 overflow-hidden">
+            <div class="flex items-center gap-2 sm:gap-6 min-w-0">
+              <button id="step-indicator-1" class="flex items-center gap-1.5 group shrink-0" onclick="goToStep(1)">
+                <span id="step-dot-1" class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold font-label transition-all duration-300 signature-gradient text-white shadow-md shadow-primary/25">1</span>
+                <span class="text-xs font-label font-semibold uppercase tracking-[0.15em] text-primary hidden sm:block">Service</span>
+              </button>
+              <div class="w-4 sm:w-8 h-px bg-outline-variant shrink-0"></div>
+              <button id="step-indicator-2" class="flex items-center gap-1.5 group shrink-0" onclick="goToStep(2)">
+                <span id="step-dot-2" class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold font-label transition-all duration-300 bg-surface-container text-on-surface-variant">2</span>
+                <span class="text-xs font-label font-semibold uppercase tracking-[0.15em] text-on-surface-variant hidden sm:block">Vehicle</span>
+              </button>
+              <div class="w-4 sm:w-8 h-px bg-outline-variant shrink-0"></div>
+              <button id="step-indicator-3" class="flex items-center gap-1.5 group shrink-0" onclick="goToStep(3)">
+                <span id="step-dot-3" class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold font-label transition-all duration-300 bg-surface-container text-on-surface-variant">3</span>
+                <span class="text-xs font-label font-semibold uppercase tracking-[0.15em] text-on-surface-variant hidden sm:block">Schedule</span>
+              </button>
+              <div class="w-4 sm:w-8 h-px bg-outline-variant shrink-0"></div>
+              <button id="step-indicator-4" class="flex items-center gap-1.5 group shrink-0" onclick="goToStep(4)">
+                <span id="step-dot-4" class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold font-label transition-all duration-300 bg-surface-container text-on-surface-variant">4</span>
+                <span class="text-xs font-label font-semibold uppercase tracking-[0.15em] text-on-surface-variant hidden sm:block">Details</span>
+              </button>
+            </div>
+            <span id="step-label" class="text-xs font-label text-on-surface-variant shrink-0 ml-3">Step 1 of 4</span>
+          </div>
+          <div class="w-full h-0.5 bg-surface-container rounded-full overflow-hidden">
+            <div id="progress-bar" class="progress-fill" style="width:25%"></div>
+          </div>
+        </div>
+
+        <!-- ── Step 1: Service ── -->
+        <div id="step-1" class="step-panel active load-reveal" style="animation-delay:0.26s">
+          <h2 class="font-headline font-black text-2xl tracking-normal mb-1" style="letter-spacing:0.02em;">What do you need?</h2>
+          <p class="text-on-surface-variant text-sm font-light mb-7">Select the service that best matches your issue.</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8" id="service-grid">
+            <div class="service-card selected" data-service="Oil & Filter Change" onclick="selectService(this)">
+              <div class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-primary text-[22px] mt-0.5" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;">oil_barrel</span>
+                <div>
+                  <p class="font-headline font-bold text-sm text-on-surface">Oil & Filter Change</p>
+                  <p class="text-on-surface-variant text-xs font-light mt-0.5 leading-relaxed">Full synthetic or semi-synthetic. Includes filter replacement.</p>
+                </div>
+              </div>
+            </div>
+            <div class="service-card" data-service="Brake Service" onclick="selectService(this)">
+              <div class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-primary text-[22px] mt-0.5" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;">emergency_heat</span>
+                <div>
+                  <p class="font-headline font-bold text-sm text-on-surface">Brake Service</p>
+                  <p class="text-on-surface-variant text-xs font-light mt-0.5 leading-relaxed">Pad replacement, rotor inspection, fluid check.</p>
+                </div>
+              </div>
+            </div>
+            <div class="service-card" data-service="Battery Replacement" onclick="selectService(this)">
+              <div class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-primary text-[22px] mt-0.5" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;">battery_full</span>
+                <div>
+                  <p class="font-headline font-bold text-sm text-on-surface">Battery Replacement</p>
+                  <p class="text-on-surface-variant text-xs font-light mt-0.5 leading-relaxed">Supply and fit. All brands, all vehicles.</p>
+                </div>
+              </div>
+            </div>
+            <div class="service-card" data-service="Logbook Service" onclick="selectService(this)">
+              <div class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-primary text-[22px] mt-0.5" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;">menu_book</span>
+                <div>
+                  <p class="font-headline font-bold text-sm text-on-surface">Logbook Service</p>
+                  <p class="text-on-surface-variant text-xs font-light mt-0.5 leading-relaxed">Manufacturer schedule maintained. Warranty safe.</p>
+                </div>
+              </div>
+            </div>
+            <div class="service-card" data-service="Pre-Purchase Inspection" onclick="selectService(this)">
+              <div class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-primary text-[22px] mt-0.5" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;">search</span>
+                <div>
+                  <p class="font-headline font-bold text-sm text-on-surface">Pre-Purchase Inspection</p>
+                  <p class="text-on-surface-variant text-xs font-light mt-0.5 leading-relaxed">Full report before you commit to buying.</p>
+                </div>
+              </div>
+            </div>
+            <div class="service-card" data-service="Diagnostics" onclick="selectService(this)">
+              <div class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-primary text-[22px] mt-0.5" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;">biotech</span>
+                <div>
+                  <p class="font-headline font-bold text-sm text-on-surface">Diagnostics</p>
+                  <p class="text-on-surface-variant text-xs font-light mt-0.5 leading-relaxed">Check engine light, fault codes, electrical issues.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button onclick="nextStep()" class="signature-gradient text-white px-8 py-3 rounded-md font-headline font-bold text-sm tracking-tight hover:opacity-90 active:scale-95 transition-opacity shadow-lg shadow-primary/20 flex items-center gap-2">
+            Continue
+            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+          </button>
+        </div>
+
+        <!-- ── Step 2: Vehicle ── -->
+        <div id="step-2" class="step-panel">
+          <h2 class="font-headline font-black text-2xl tracking-normal mb-1" style="letter-spacing:0.02em;">Your vehicle</h2>
+          <p class="text-on-surface-variant text-sm font-light mb-7">Tell us what we'll be working on.</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant font-label mb-2">Make</label>
+              <select id="v-make" class="field-input" onchange="updateModels()">
+                <option value="">Select make…</option>
+                <option>Toyota</option>
+                <option>Mazda</option>
+                <option>Hyundai</option>
+                <option>Kia</option>
+                <option>Ford</option>
+                <option>Holden</option>
+                <option>BMW</option>
+                <option>Mercedes-Benz</option>
+                <option>Audi</option>
+                <option>Volkswagen</option>
+                <option>Subaru</option>
+                <option>Honda</option>
+                <option>Nissan</option>
+                <option>Mitsubishi</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant font-label mb-2">Model</label>
+              <input id="v-model" type="text" placeholder="e.g. Camry, Mazda3…" class="field-input"/>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant font-label mb-2">Year</label>
+              <select id="v-year" class="field-input">
+                <option value="">Select year…</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant font-label mb-2">Registration Plate</label>
+              <input id="v-rego" type="text" placeholder="e.g. ABC123" class="field-input" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()"/>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <button onclick="prevStep()" class="px-6 py-3 rounded-md font-headline font-bold text-sm tracking-tight border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors active:scale-95">
+              Back
+            </button>
+            <button onclick="nextStep()" class="signature-gradient text-white px-8 py-3 rounded-md font-headline font-bold text-sm tracking-tight hover:opacity-90 active:scale-95 transition-opacity shadow-lg shadow-primary/20 flex items-center gap-2">
+              Continue
+              <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ── Step 3: Schedule ── -->
+        <div id="step-3" class="step-panel">
+          <h2 class="font-headline font-black text-2xl tracking-normal mb-1" style="letter-spacing:0.02em;">When & where</h2>
+          <p class="text-on-surface-variant text-sm font-light mb-7">Pick a date, time, and your location.</p>
+
+          <div class="mb-6">
+            <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant font-label mb-3">Date</label>
+            <div id="date-grid" class="grid grid-cols-4 sm:grid-cols-7 gap-2"></div>
+          </div>
+
+          <div class="mb-6">
+            <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant font-label mb-3">Time</label>
+            <div class="flex flex-wrap gap-2" id="time-grid">
+              <button class="slot-btn selected" data-time="8:00 AM" onclick="selectTime(this)">8:00 AM</button>
+              <button class="slot-btn" data-time="9:00 AM" onclick="selectTime(this)">9:00 AM</button>
+              <button class="slot-btn" data-time="10:00 AM" onclick="selectTime(this)">10:00 AM</button>
+              <button class="slot-btn" data-time="11:00 AM" onclick="selectTime(this)">11:00 AM</button>
+              <button class="slot-btn" data-time="12:00 PM" onclick="selectTime(this)">12:00 PM</button>
+              <button class="slot-btn" data-time="1:00 PM" onclick="selectTime(this)">1:00 PM</button>
+              <button class="slot-btn" data-time="2:00 PM" onclick="selectTime(this)">2:00 PM</button>
+              <button class="slot-btn" data-time="3:00 PM" onclick="selectTime(this)">3:00 PM</button>
+              <button class="slot-btn" data-time="4:00 PM" onclick="selectTime(this)">4:00 PM</button>
+            </div>
+          </div>
+
+          <div class="mb-8">
+            <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant font-label mb-2">Service Address</label>
+            <input id="s-address" type="text" placeholder="Street address, suburb…" class="field-input mb-3"/>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant font-label mb-2">Suburb</label>
+                <input id="s-suburb" type="text" placeholder="e.g. Newtown" class="field-input"/>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant font-label mb-2">Postcode</label>
+                <input id="s-postcode" type="text" placeholder="2000" class="field-input" maxlength="4"/>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <button onclick="prevStep()" class="px-6 py-3 rounded-md font-headline font-bold text-sm tracking-tight border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors active:scale-95">
+              Back
+            </button>
+            <button onclick="nextStep()" class="signature-gradient text-white px-8 py-3 rounded-md font-headline font-bold text-sm tracking-tight hover:opacity-90 active:scale-95 transition-opacity shadow-lg shadow-primary/20 flex items-center gap-2">
+              Continue
+              <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ── Step 4: Contact details ── -->
+        <div id="step-4" class="step-panel">
+          <h2 class="font-headline font-black text-2xl tracking-normal mb-1" style="letter-spacing:0.02em;">Your details</h2>
+          <p class="text-on-surface-variant text-sm font-light mb-7">We'll send your confirmation to these.</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant font-label mb-2">First Name</label>
+              <input id="c-first" type="text" placeholder="Alex" class="field-input"/>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant font-label mb-2">Last Name</label>
+              <input id="c-last" type="text" placeholder="Johnson" class="field-input"/>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant font-label mb-2">Phone</label>
+              <input id="c-phone" type="tel" placeholder="04XX XXX XXX" class="field-input"/>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant font-label mb-2">Email</label>
+              <input id="c-email" type="email" placeholder="alex@email.com" class="field-input"/>
+            </div>
+          </div>
+          <div class="mb-8">
+            <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant font-label mb-2">Notes (optional)</label>
+            <textarea id="c-notes" placeholder="Any additional details about the issue…" rows="3" class="field-input resize-none"></textarea>
+          </div>
+          <div class="flex items-center gap-4">
+            <button onclick="prevStep()" class="px-6 py-3 rounded-md font-headline font-bold text-sm tracking-tight border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors active:scale-95">
+              Back
+            </button>
+            <button onclick="submitBooking()" class="signature-gradient text-white px-8 py-3 rounded-md font-headline font-bold text-sm tracking-tight hover:opacity-90 active:scale-95 transition-opacity shadow-lg shadow-primary/20 flex items-center gap-2">
+              Confirm Booking
+              <span class="material-symbols-outlined text-[18px]">check</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ── Confirmation ── -->
+        <div id="step-confirm" class="step-panel text-center py-8">
+          <svg width="72" height="72" viewBox="0 0 72 72" fill="none" class="mx-auto mb-6">
+            <circle class="check-circle" cx="36" cy="36" r="30" stroke="#EE3D11" stroke-width="2.5" fill="none"/>
+            <polyline class="check-mark" points="22,36 32,46 52,26" stroke="#EE3D11" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <h2 class="font-headline font-black text-3xl tracking-normal mb-2" style="letter-spacing:0.02em;">You're booked.</h2>
+          <p class="text-on-surface-variant text-sm font-light mb-8 max-w-xs mx-auto leading-relaxed">We'll send a confirmation SMS shortly. See you on the day.</p>
+          <div id="confirm-summary" class="text-left max-w-sm mx-auto bg-surface-container-low rounded-2xl p-6 mb-8 border border-outline-variant/20"></div>
+          <a href="index.html" class="inline-flex items-center gap-2 text-primary font-headline font-bold text-sm hover:underline">
+            <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            Back to Home
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Right: sticky summary ── -->
+      <div class="hidden lg:block">
+        <div class="sticky top-28 load-reveal" style="animation-delay:0.3s">
+          <!-- Summary card -->
+          <div class="bg-white rounded-2xl border border-outline-variant/30 p-7 shadow-[0_4px_32px_rgba(0,0,0,0.06)] mb-5">
+            <div class="flex items-center gap-2 mb-5">
+              <span class="text-[10px] font-bold titlecase tracking-[0.25em] text-primary font-headline">Booking Summary</span>
+            </div>
+            <div id="summary-service" class="summary-row">
+              <span class="text-on-surface-variant font-headline text-xs font-medium">Service</span>
+              <span id="summary-service-val" class="font-headline font-bold text-sm text-right text-on-surface">Oil & Filter Change</span>
+            </div>
+            <div id="summary-vehicle" class="summary-row">
+              <span class="text-on-surface-variant font-headline text-xs font-medium">Vehicle</span>
+              <span id="summary-vehicle-val" class="font-headline font-bold text-sm text-right text-on-surface">—</span>
+            </div>
+            <div class="summary-row">
+              <span class="text-on-surface-variant font-headline text-xs font-medium">Date</span>
+              <span id="summary-date-val" class="font-headline font-bold text-sm text-right text-on-surface">—</span>
+            </div>
+            <div class="summary-row">
+              <span class="text-on-surface-variant font-headline text-xs font-medium">Time</span>
+              <span id="summary-time-val" class="font-headline font-bold text-sm text-right text-on-surface">8:00 AM</span>
+            </div>
+            <div class="summary-row">
+              <span class="text-on-surface-variant font-headline text-xs font-medium">Location</span>
+              <span id="summary-location-val" class="font-headline font-bold text-sm text-right text-on-surface">—</span>
+            </div>
+          </div>
+
+          <!-- Trust badges -->
+          <div class="bg-surface-container-low rounded-2xl border border-outline-variant/20 p-5">
+            <div class="flex flex-col gap-3">
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;">verified</span>
+                <p class="text-xs text-on-surface font-medium">Licensed & insured mechanics</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;">schedule</span>
+                <p class="text-xs text-on-surface font-medium">Same-day or next-day bookings</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;">thumb_up</span>
+                <p class="text-xs text-on-surface font-medium">4.9 ★ Google Rating · 150+ jobs</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<!-- ── Footer ── -->
+<footer class="bg-stone-950 w-full py-14 px-8">
+  <div class="max-w-screen-xl mx-auto flex flex-col items-center gap-8 text-center">
+    <img alt="Mechanic2U" class="h-12 w-auto brightness-0 invert opacity-75" src="mechaniclogo.png"/>
+    <div class="flex flex-wrap justify-center gap-8 text-stone-500 font-label text-[10px] uppercase tracking-[0.22em]">
+      <a class="hover:text-primary transition-colors" href="#">Inner West</a>
+      <a class="hover:text-primary transition-colors" href="#">Eastern Suburbs</a>
+      <a class="hover:text-primary transition-colors" href="#">North Shore</a>
+      <a class="hover:text-primary transition-colors" href="#">Western Sydney</a>
+    </div>
+    <p class="text-[10px] text-stone-600 uppercase tracking-[0.2em] font-label">© 2024 Mechanic2U Sydney. Mobile Mechanic Service.</p>
+  </div>
+</footer>
+
+<!-- ── Mobile Bottom Nav ── -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-stone-100 flex justify-around items-center px-2 py-2 pb-[env(safe-area-inset-bottom)]">
+  <a class="flex flex-col items-center justify-center text-stone-400 hover:text-stone-900 active:translate-y-0.5 transition-all" href="index.html">
+    <span class="material-symbols-outlined text-[22px]">build</span>
+    <span class="font-label text-[9px] uppercase tracking-widest font-semibold mt-1">Services</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-stone-400 hover:text-stone-900 active:translate-y-0.5 transition-all" href="diagnostics.html">
+    <span class="material-symbols-outlined text-[22px]">biotech</span>
+    <span class="font-label text-[9px] uppercase tracking-widest font-semibold mt-1">Diagnostics</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-stone-400 hover:text-stone-900 active:translate-y-0.5 transition-all" href="service-areas.html">
+    <span class="material-symbols-outlined text-[22px]">map</span>
+    <span class="font-label text-[9px] uppercase tracking-widest font-semibold mt-1">Service Areas</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-primary bg-stone-200/50 rounded-xl px-4 py-1 active:translate-y-0.5 transition-all" href="booking.html">
+    <span class="material-symbols-outlined text-[22px]">event</span>
+    <span class="font-label text-[9px] uppercase tracking-widest font-semibold mt-1">Book Now</span>
+  </a>
+</nav>
+
+<script>
+// ── State ──────────────────────────────────────────
+let currentStep = 1;
+const totalSteps = 4;
+const state = {
+  service: 'Oil & Filter Change',
+  date: null,
+  time: '8:00 AM',
+  make: '', model: '', year: '', rego: '',
+  address: '', suburb: '', postcode: '',
+  firstName: '', lastName: '', phone: '', email: '', notes: ''
+};
+
+// ── Year select ────────────────────────────────────
+(function() {
+  const sel = document.getElementById('v-year');
+  const year = new Date().getFullYear();
+  for (let y = year; y >= 1990; y--) {
+    const o = document.createElement('option');
+    o.value = o.text = y;
+    sel.appendChild(o);
+  }
+})();
+
+// ── Date grid ──────────────────────────────────────
+(function() {
+  const grid = document.getElementById('date-grid');
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const today = new Date();
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    const btn = document.createElement('button');
+    btn.className = 'slot-btn flex flex-col items-center py-2 px-1 w-full' + (i === 0 ? ' selected' : '');
+    btn.dataset.date = d.toLocaleDateString('en-AU', { weekday:'short', day:'numeric', month:'short' });
+    btn.innerHTML = `<span class="text-[10px] uppercase tracking-wide opacity-60">${days[d.getDay()]}</span><span class="text-base font-bold font-headline leading-tight">${d.getDate()}</span><span class="text-[9px] opacity-60 mt-0.5">${months[d.getMonth()]}</span>`;
+    btn.onclick = function() { selectDate(this); };
+    if (i === 0) state.date = btn.dataset.date;
+    grid.appendChild(btn);
+  }
+  updateSummary();
+})();
+
+// ── Service select ────────────────────────────────
+function selectService(card) {
+  document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  state.service = card.dataset.service;
+  document.getElementById('summary-service-val').textContent = state.service;
+}
+
+// ── Date / time select ────────────────────────────
+function selectDate(btn) {
+  document.querySelectorAll('#date-grid .slot-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  state.date = btn.dataset.date;
+  document.getElementById('summary-date-val').textContent = state.date;
+}
+function selectTime(btn) {
+  document.querySelectorAll('#time-grid .slot-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  state.time = btn.dataset.time;
+  document.getElementById('summary-time-val').textContent = state.time;
+}
+
+// ── Step navigation ───────────────────────────────
+function goToStep(n) {
+  if (n > currentStep) return; // only allow going back
+  showStep(n);
+}
+
+function nextStep() {
+  if (currentStep < totalSteps) showStep(currentStep + 1);
+}
+function prevStep() {
+  if (currentStep > 1) showStep(currentStep - 1);
+}
+
+function showStep(n) {
+  const old = document.getElementById('step-' + currentStep);
+  if (old) {
+    old.style.opacity = '0';
+    old.style.transform = 'translateY(-12px)';
+    setTimeout(() => { old.classList.remove('active'); old.style.opacity = ''; old.style.transform = ''; }, 400);
+  }
+  currentStep = n;
+  setTimeout(() => {
+    const el = document.getElementById('step-' + n);
+    el.classList.add('active');
+    updateProgress();
+    syncStateFromInputs();
+    updateSummary();
+  }, n === 1 ? 0 : 350);
+}
+
+function updateProgress() {
+  const pct = (currentStep / totalSteps) * 100;
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('step-label').textContent = 'Step ' + currentStep + ' of ' + totalSteps;
+
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById('step-dot-' + i);
+    if (i < currentStep) {
+      dot.className = 'w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold font-label transition-all duration-300 signature-gradient text-white shadow-md shadow-primary/25';
+      dot.innerHTML = '<span class="material-symbols-outlined text-[16px]" style="font-variation-settings:\'FILL\' 1">check</span>';
+    } else if (i === currentStep) {
+      dot.className = 'w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold font-label transition-all duration-300 signature-gradient text-white shadow-md shadow-primary/25';
+      dot.textContent = i;
+    } else {
+      dot.className = 'w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold font-label transition-all duration-300 bg-surface-container text-on-surface-variant';
+      dot.textContent = i;
+    }
+  }
+}
+
+// ── Sync inputs → state ───────────────────────────
+function syncStateFromInputs() {
+  state.make   = document.getElementById('v-make')?.value || state.make;
+  state.model  = document.getElementById('v-model')?.value || state.model;
+  state.year   = document.getElementById('v-year')?.value || state.year;
+  state.rego   = document.getElementById('v-rego')?.value || state.rego;
+  state.address  = document.getElementById('s-address')?.value || state.address;
+  state.suburb   = document.getElementById('s-suburb')?.value || state.suburb;
+  state.postcode = document.getElementById('s-postcode')?.value || state.postcode;
+}
+
+function updateSummary() {
+  const veh = [state.make, state.model, state.year].filter(Boolean).join(' ') || '—';
+  document.getElementById('summary-vehicle-val').textContent = veh;
+  document.getElementById('summary-date-val').textContent = state.date || '—';
+  document.getElementById('summary-time-val').textContent = state.time;
+  const loc = [state.suburb, state.postcode].filter(Boolean).join(' ') || '—';
+  document.getElementById('summary-location-val').textContent = loc;
+}
+
+// Live summary updates from location fields
+['s-suburb','s-postcode'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', () => { syncStateFromInputs(); updateSummary(); });
+});
+['v-make','v-model','v-year'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', () => { syncStateFromInputs(); updateSummary(); });
+  if (el) el.addEventListener('change', () => { syncStateFromInputs(); updateSummary(); });
+});
+
+// ── Submit ────────────────────────────────────────
+function submitBooking() {
+  syncStateFromInputs();
+  state.firstName = document.getElementById('c-first')?.value || '';
+  state.lastName  = document.getElementById('c-last')?.value || '';
+  state.phone     = document.getElementById('c-phone')?.value || '';
+  state.email     = document.getElementById('c-email')?.value || '';
+  state.notes     = document.getElementById('c-notes')?.value || '';
+
+  // Hide step 4, show confirmation
+  const s4 = document.getElementById('step-4');
+  s4.style.opacity = '0';
+  s4.style.transform = 'translateY(-12px)';
+  setTimeout(() => {
+    s4.classList.remove('active');
+    s4.style.opacity = ''; s4.style.transform = '';
+
+    // Build confirm summary
+    const veh = [state.make, state.model, state.year].filter(Boolean).join(' ') || 'Vehicle not specified';
+    const loc = [state.address, state.suburb, state.postcode].filter(Boolean).join(', ') || 'Location not specified';
+    document.getElementById('confirm-summary').innerHTML = `
+      <div class="summary-row"><span class="text-on-surface-variant font-label text-xs font-medium">Service</span><span class="font-headline font-bold text-sm text-on-surface text-right">${state.service}</span></div>
+      <div class="summary-row"><span class="text-on-surface-variant font-label text-xs font-medium">Vehicle</span><span class="font-headline font-bold text-sm text-on-surface text-right">${veh}</span></div>
+      <div class="summary-row"><span class="text-on-surface-variant font-label text-xs font-medium">Date & Time</span><span class="font-headline font-bold text-sm text-on-surface text-right">${state.date}, ${state.time}</span></div>
+      <div class="summary-row"><span class="text-on-surface-variant font-label text-xs font-medium">Location</span><span class="font-headline font-bold text-sm text-on-surface text-right max-w-[180px]">${loc}</span></div>
+      ${state.firstName ? `<div class="summary-row"><span class="text-on-surface-variant font-label text-xs font-medium">Contact</span><span class="font-headline font-bold text-sm text-on-surface text-right">${state.firstName} ${state.lastName}</span></div>` : ''}
+    `;
+
+    const conf = document.getElementById('step-confirm');
+    conf.classList.add('active');
+
+    // Hide progress + summary sidebar step indicators
+    document.getElementById('progress-bar').style.width = '100%';
+    document.getElementById('step-label').textContent = 'Booking confirmed';
+    for (let i = 1; i <= 4; i++) {
+      const dot = document.getElementById('step-dot-' + i);
+      dot.className = 'w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold font-label transition-all duration-300 signature-gradient text-white shadow-md shadow-primary/25';
+      dot.innerHTML = '<span class="material-symbols-outlined text-[16px]" style="font-variation-settings:\'FILL\' 1">check</span>';
+    }
+  }, 350);
+}
+</script>
+
+</body>
+</html>
